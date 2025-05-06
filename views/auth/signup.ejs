@@ -1,0 +1,24 @@
+<%- include('../layout/header') %>
+  <h1>Signup</h1>
+  <form action="/signup" method="POST">
+    <input type="email" class="form-control <% if (errorObj.email) { %>is-invalid<% } %>" name="email" placeholder="Email" ><br>
+    <% if (errorObj.email) { %>
+      <div class="invalid-feedback">
+        <%= errorObj.email %>
+      </div>
+    <% } %>
+    <input type="text" class="form-control <% if (errorObj.name) { %>is-invalid<% } %>" name="name" placeholder="Name" ><br>
+    <% if (errorObj.name) { %>
+      <div class="invalid-feedback">
+        <%= errorObj.name %>
+      </div>
+    <% } %>
+    <input type="password" name="password" class="form-control <% if (errorObj.password) { %>is-invalid<% } %>" placeholder="Password" ><br>
+    <% if (errorObj.password) { %>
+      <div class="invalid-feedback">
+        <%= errorObj.password %>
+      </div>
+    <% } %>
+    <button type="submit"class="btn btn-success">Login</button>
+  </form>
+  <%- include('../layout/footer') %>

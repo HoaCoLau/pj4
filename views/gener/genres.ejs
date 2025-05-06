@@ -1,0 +1,33 @@
+<%- include('../layout/header') %>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Genre List</h1>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>    
+              <th>ID</th>
+              <th>Name genre</th>
+              <th>Action</th>
+
+            </tr>
+          </thead>
+          <tbody>
+            <% genres.forEach(genre => { %>
+              <tr>
+                <td><%= genre.id %></td>
+                <td><%= genre.name %></td>
+
+                <td>
+                  <a href="/genres/<%= genre.id %>" class="btn btn-info btn-sm">View</a>
+                  <a href="/genres/edit/<%= genre.id %>" class="btn btn-warning btn-sm">Edit</a>
+                  <form action="/genres/<%= genre.id %>?_method=DELETE" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete?') " >Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+    </table>
+    <a href="/genres/new" class="btn btn-primary">Add New Genre</a>
+  </div>
+  <%- include('../layout/footer') %>

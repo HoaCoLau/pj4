@@ -1,0 +1,51 @@
+<%- include('../layout/header') %>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Edit Book</h1>
+    <form action="/books/<%= oldInput?.id %>?_method=PUT" method="POST"  enctype="multipart/form-data" >
+      <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" class="form-control <% if (errorObj.title) { %>is-invalid<% } %>" id="title" name="title" value="<%= oldInput?.title || '' %>" >
+        <% if (errorObj.title) { %>
+          <div class="invalid-feedback">
+            <%= errorObj.title %>
+          </div>
+        <% } %>
+      </div>
+      <div class="mb-3">
+        <label for="image" class="form-label">Ảnh sách</label>
+        <% if (oldInput?.image) { %>
+          <img src="/uploads/<%= oldInput?.image %>" alt="Book Image" width="100"><br>
+        <% } %>
+        <input type="file" class="form-control" id="image" name="image">
+      </div>
+      <div class="mb-3">
+        <label for="price" class="form-label">Price</label>
+        <input type="number" step="0.01" class="form-control <% if (errorObj.price) { %>is-invalid<% } %>" id="price" name="price" value="<%= oldInput?.price || '' %>" >
+        <% if (errorObj.price) { %>
+          <div class="invalid-feedback">
+            <%= errorObj.price %>
+          </div>
+        <% } %>
+      </div>
+      <div class="mb-3">
+        <label for="genre_id" class="form-label">Genre</label>
+        <select class="form-select" id="genre_id" name="genre_id" >
+          <% genres.forEach(genre => { %>
+            <option value="<%= genre.id %>" <%= oldInput?.price === genre.id ? 'selected' : '' %>><%= genre.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="decription" class="form-label">Decription</label>
+        <textarea class="form-control <% if (errorObj.decription) { %>is-invalid<% } %>" name="decription" id="decription" rows="5" ><%= oldInput?.decription || '' %></textarea>
+        <% if (errorObj.decription) { %>
+          <div class="invalid-feedback">
+            <%= errorObj.decription %>
+          </div>
+        <% } %>
+      </div>
+      <button type="submit" class="btn btn-primary">Update Book</button>
+      <a href="/books" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+  <%- include('../layout/footer') %>

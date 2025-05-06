@@ -1,0 +1,9 @@
+<%- include('../layout/header') %>
+  <h1>Login</h1>
+  <form action="/login" method="POST">
+    <input type="email" class="form-control" name="email" placeholder="Email" ><br>
+    <input type="password" name="password" class="form-control" placeholder="Password" ><br>
+    <button type="submit"class="btn btn-success">Login</button>
+  </form>
+  <a href="/signup" >Create new account</a>
+  <%- include('../layout/footer') %>
