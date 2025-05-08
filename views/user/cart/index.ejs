@@ -1,0 +1,111 @@
+<% layout('layouts/user') -%>
+
+<h1><%= title %></h1>
+
+<% if (!cart || !cart.cartDetails || cart.cartDetails.length === 0) { %>
+    <div class="alert alert-info" role="alert">
+        <i class="fas fa-info-circle"></i> Giỏ hàng của bạn đang trống.
+    </div>
+    <p><a href="/products" class="btn btn-primary"><i class="fas fa-box-open"></i> Tiếp tục mua sắm</a></p>
+<% } else { %>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th>Giá</th>
+                <th>Số lượng</th>
+                <th>Tổng</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% let cartTotal = 0; %>
+            <% cart.cartDetails.forEach(item => { %>
+                {# Ép kiểu sang số trước khi tính tổng #}
+                <% const itemTotal = (item && item.quantity !== null && item.quantity !== undefined && item.price_at_addition !== null && item.price_at_addition !== undefined) ? item.quantity * parseFloat(item.price_at_addition) : 0; %>
+                <% cartTotal += itemTotal; %>
+                <tr>
+                    <td>
+                         <% if (item && item.product) { %>
+                            <img src="<%= item.product.image_url || '/images/placeholder.png' %>" alt="<%= item.product.name %>" style="width: 50px; height: auto; margin-right: 10px;">
+                            <%= item.product.name %>
+                        <% } else if (item && item.product_name) { %>
+                            <%= item.product_name %>
+                        <% } else { %>
+                            Sản phẩm không xác định
+                        <% } %>
+                    </td>
+                    {# Ép kiểu sang số trước khi gọi toFixed #}
+                    <td><%= (item && item.price_at_addition !== null && item.price_at_addition !== undefined) ? parseFloat(item.price_at_addition).toFixed(2) : 'N/A' %> VND</td>
+                    <td>
+                        {# Form cập nhật số lượng #}
+                        <% if (item && item.id && item.quantity !== null && item.quantity !== undefined) { %>
+                            <form action="/user/cart/update/<%= item.id %>?_method=PUT" method="POST" class="d-flex align-items-center">
+                                 <input type="hidden" name="_method" value="PUT">
+                                <input type="number" name="quantity" value="<%= item.quantity %>" min="0" class="form-control form-control-sm" style="width: 70px; display: inline-block;">
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-sync-alt"></i></button>
+                            </form>
+                        <% } else { %>
+                            N/A
+                        <% } %>
+                    </td>
+                    {# Ép kiểu sang số trước khi gọi toFixed #}
+                    <td><%= parseFloat(itemTotal).toFixed(2) %> VND</td>
+                    <td>
+                        {# Form xóa sản phẩm #}
+                        <% if (item && item.id) { %>
+                            <form action="/user/cart/remove/<%= item.id %>?_method=DELETE" method="POST" style="display:inline;">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?');"><i class="fas fa-trash-alt"></i> Xóa</button>
+                            </form>
+                        <% } else { %>
+                            N/A
+                        <% } %>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td>
+                {# Ép kiểu sang số trước khi gọi toFixed #}
+                <td><strong><%= parseFloat(cartTotal).toFixed(2) %> VND</strong></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {# Form đặt hàng - cần thêm các trường địa chỉ, phương thức thanh toán #}
+    <h2 class="mt-5">Thông tin đặt hàng</h2>
+     <div class="row">
+         <div class="col-md-8">
+             <form action="/user/orders" method="POST">
+                 <div class="mb-3">
+                     <label for="shipping_address" class="form-label">Địa chỉ giao hàng:</label>
+                     <textarea class="form-control" id="shipping_address" name="shipping_address" rows="3" required></textarea>
+                 </div>
+                  <div class="mb-3">
+                     <label for="billing_address" class="form-label">Địa chỉ thanh toán:</label>
+                     <textarea class="form-control" id="billing_address" name="billing_address" rows="3" required></textarea>
+                 </div>
+                 <div class="mb-3">
+                     <label for="payment_method" class="form-label">Phương thức thanh toán:</label>
+                      <select class="form-select" id="payment_method" name="payment_method" required>
+                         <option value="">Chọn phương thức</option>
+                         <option value="cod">Thanh toán khi nhận hàng (COD)</option>
+                         <option value="bank_transfer">Chuyển khoản ngân hàng</option>
+                         {# Thêm các phương thức khác #}
+                     </select>
+                 </div>
+                  <div class="mb-3">
+                     <label for="notes" class="form-label">Ghi chú:</label>
+                     <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                 </div>
+
+                 <button type="submit" class="btn btn-success btn-lg"><i class="fas fa-money-check-alt"></i> Đặt hàng</button>
+             </form>
+         </div>
+     </div>
+
+
+<% } %>

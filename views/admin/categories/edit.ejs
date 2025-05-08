@@ -2,17 +2,16 @@
 
 <h1>Chỉnh sửa Danh mục: <%= category.name %></h1>
 
-<% if (query && query.error) { %>
-    <p style="color: red;"><%= query.error %></p>
-<% } %>
-
-<form action="/admin/categories/edit/<%= category.id %>?_method=PUT" method="POST">
-    <input type="hidden" name="_method" value="PUT">
-    <div>
-        <label for="name">Tên danh mục:</label>
-        <input type="text" id="name" name="name" value="<%= category.name %>" required value="<%= query.name || category.name || '' %>"> {# Giữ lại giá trị từ DB hoặc giá trị đã nhập #}
+<div class="row">
+    <div class="col-md-6">
+        <form action="/admin/categories/edit/<%= category.id %>?_method=PUT" method="POST">
+            <input type="hidden" name="_method" value="PUT">
+            <div class="mb-3">
+                <label for="name" class="form-label">Tên danh mục:</label>
+                <input type="text" class="form-control" id="name" name="name" value="<%= query.name || category.name || '' %>" required>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Cập nhật</button>
+             <a href="/admin/categories" class="btn btn-secondary ms-2"><i class="fas fa-arrow-left"></i> Trở về danh sách</a>
+        </form>
     </div>
-    <button type="submit">Cập nhật</button>
-</form>
-
-<p><a href="/admin/categories">Trở về danh sách</a></p>
+</div>

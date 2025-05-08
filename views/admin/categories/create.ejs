@@ -1,17 +1,16 @@
 <% layout('layouts/admin') -%>
 
-<h1>Thêm mới Danh mục</h1>
+<h1><%= title %></h1>
 
-<% if (query && query.error) { %>
-    <p style="color: red;"><%= query.error %></p>
-<% } %>
-
-<form action="/admin/categories" method="POST">
-    <div>
-        <label for="name">Tên danh mục:</label>
-        <input type="text" id="name" name="name" required value="<%= query.name || '' %>"> {# Giữ lại giá trị đã nhập #}
+<div class="row">
+    <div class="col-md-6">
+        <form action="/admin/categories" method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">Tên danh mục:</label>
+                <input type="text" class="form-control" id="name" name="name" required value="<%= query.name || '' %>">
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Thêm danh mục</button>
+            <a href="/admin/categories" class="btn btn-secondary ms-2"><i class="fas fa-arrow-left"></i> Trở về danh sách</a>
+        </form>
     </div>
-    <button type="submit">Thêm danh mục</button>
-</form>
-
-<p><a href="/admin/categories">Trở về danh sách</a></p>
+</div>

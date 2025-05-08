@@ -1,0 +1,4 @@
+/* public/css/style.css */
+body {
+    padding-top: 0; /* Để tránh navbar che khuất nội dung */
+}

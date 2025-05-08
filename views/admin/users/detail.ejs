@@ -1,0 +1,26 @@
+<% layout('layouts/admin') -%>
+
+<h1><%= title %></h1>
+
+<div class="card">
+    <div class="card-body">
+        <p><strong>ID:</strong> <%= user_detail.id %></p>
+        <p><strong>Email:</strong> <%= user_detail.email %></p>
+        <p><strong>Tên:</strong> <%= user_detail.name %></p>
+        <p><strong>Vai trò:</strong> <span class="badge <%= user_detail.role === 'admin' ? 'bg-danger' : 'bg-secondary' %>"><%= user_detail.role %></span></p>
+        <% if (user_detail.image) { %>
+            <p><strong>Ảnh Profile:</strong></p>
+            <img src="<%= user_detail.image %>" alt="<%= user_detail.name %>" class="img-thumbnail" style="max-width: 150px;">
+        <% } %>
+
+        <div class="mt-3">
+            <a href="/admin/users/edit/<%= user_detail.id %>" class="btn btn-warning me-2"><i class="fas fa-edit"></i> Sửa</a>
+            <form action="/admin/users/delete/<%= user_detail.id %>?_method=DELETE" method="POST" style="display:inline;">
+                 <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');"><i class="fas fa-trash-alt"></i> Xóa</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<p class="mt-3"><a href="/admin/users" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Trở về danh sách</a></p>

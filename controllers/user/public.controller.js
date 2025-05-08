@@ -7,7 +7,8 @@ const logger = require('../../config/logger');
 exports.home = (req, res) => {
     req.log.info('Rendering public home page');
     Promise.all([
-        Product.findAll({ limit: 8, order: [['createdAt', 'DESC']] }),
+        // Sửa lỗi: Sắp xếp theo 'created_at' thay vì 'createdAt'
+        Product.findAll({ limit: 8, order: [['created_at', 'DESC']] }),
         Category.findAll()
     ])
     .then(([latestProducts, categories]) => {
@@ -32,8 +33,9 @@ exports.listProducts = (req, res) => {
 
     Product.findAll({
         where: condition,
-        include: ['category']
-        // Thêm order, limit, offset cho phân trang, sắp xếp
+        include: ['category'],
+        // Thêm sắp xếp mặc định nếu cần, sử dụng tên cột chính xác
+        // order: [['name', 'ASC']]
     })
     .then(data => {
          Category.findAll().then(categories => {
