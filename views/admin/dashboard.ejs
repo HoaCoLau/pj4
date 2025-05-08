@@ -1,0 +1,13 @@
+<% layout('layouts/admin') -%>
+
+<h1>Tổng quan Hệ thống</h1>
+
+<p>Chào mừng bạn đến với bảng điều khiển Admin.</p>
+
+{# Hiển thị các thông tin thống kê ở đây #}
+<div class="dashboard-stats">
+    <p>Tổng số Sản phẩm: <%= productCount %></p>
+    <p>Tổng số Đơn hàng: <%= orderCount %></p>
+    <p>Tổng số Người dùng: <%= userCount %></p>
+    {# Thêm các thống kê khác #}
+</div>

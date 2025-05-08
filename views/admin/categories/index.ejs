@@ -1,0 +1,30 @@
+<% layout('layouts/admin') -%>
+
+<h1>Quản lý Danh mục Sản phẩm</h1>
+
+<a href="/admin/categories/create">Thêm danh mục mới</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tên danh mục</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% categories.forEach(category => { %>
+            <tr>
+                <td><%= category.id %></td>
+                <td><%= category.name %></td>
+                <td>
+                    <a href="/admin/categories/edit/<%= category.id %>">Sửa</a>
+                    <form action="/admin/categories/delete/<%= category.id %>?_method=DELETE" method="POST" style="display:inline;">
+                         <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        <% }); %>
+    </tbody>
+</table>

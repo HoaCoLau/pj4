@@ -1,0 +1,17 @@
+<% layout('layouts/admin') -%>
+
+<h1>Thêm mới Danh mục</h1>
+
+<% if (query && query.error) { %>
+    <p style="color: red;"><%= query.error %></p>
+<% } %>
+
+<form action="/admin/categories" method="POST">
+    <div>
+        <label for="name">Tên danh mục:</label>
+        <input type="text" id="name" name="name" required value="<%= query.name || '' %>"> {# Giữ lại giá trị đã nhập #}
+    </div>
+    <button type="submit">Thêm danh mục</button>
+</form>
+
+<p><a href="/admin/categories">Trở về danh sách</a></p>

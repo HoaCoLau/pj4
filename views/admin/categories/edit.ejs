@@ -1,0 +1,18 @@
+<% layout('layouts/admin') -%>
+
+<h1>Chỉnh sửa Danh mục: <%= category.name %></h1>
+
+<% if (query && query.error) { %>
+    <p style="color: red;"><%= query.error %></p>
+<% } %>
+
+<form action="/admin/categories/edit/<%= category.id %>?_method=PUT" method="POST">
+    <input type="hidden" name="_method" value="PUT">
+    <div>
+        <label for="name">Tên danh mục:</label>
+        <input type="text" id="name" name="name" value="<%= category.name %>" required value="<%= query.name || category.name || '' %>"> {# Giữ lại giá trị từ DB hoặc giá trị đã nhập #}
+    </div>
+    <button type="submit">Cập nhật</button>
+</form>
+
+<p><a href="/admin/categories">Trở về danh sách</a></p>

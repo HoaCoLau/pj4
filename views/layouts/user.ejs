@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Your Store</title>
+    {# Link đến file CSS tĩnh #}
+    <link rel="stylesheet" href="/css/style.css">
+    {# Thêm link CSS, JS cần thiết #}
+</head>
+<body>
+    <header>
+        <h1>Your Store</h1>
+        <nav>
+            <a href="/">Trang chủ</a>
+            <a href="/products">Sản phẩm</a>
+            <a href="/categories">Danh mục</a>
+            <% if (user) { %>
+                <a href="/user/cart">Giỏ hàng</a>
+                <a href="/user/orders">Đơn hàng</a>
+                 <a href="/user/profile">Profile</a>
+                <span>Xin chào, <%= user.name %></span>
+                <a href="/auth/signout">Đăng xuất</a>
+            <% } else { %>
+                <a href="/auth/signin">Đăng nhập</a>
+                <a href="/auth/signup">Đăng ký</a>
+            <% } %>
+        </nav>
+    </header>
+
+    <main>
+         {# Hiển thị thông báo thành công/thất bại chung cho User #}
+         <% if (query && query.success) { %> <p style="color: green;"><%= query.success %></p> <% } %>
+         <% if (query && query.error) { %> <p style="color: red;"><%= query.error %></p> <% } %>
+
+         <%- body %> {# Nội dung view cụ thể #}
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Your Store. All rights reserved.</p>
+    </footer>
+
+    {# Thêm các script JS chung #}
+    {# <script src="/js/script.js"></script> #}
+</body>
+</html>

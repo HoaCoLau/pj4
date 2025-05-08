@@ -1,0 +1,26 @@
+<% layout('layouts/user') -%>
+
+<h1>Đăng ký Tài khoản</h1>
+
+<% if (query && query.error) { %>
+    <p style="color: red;"><%= query.error %></p>
+<% } %>
+
+<form action="/auth/signup" method="POST">
+    <div>
+        <label for="name">Tên:</label>
+        <input type="text" id="name" name="name" required value="<%= query.name || '' %>"> {# Giữ lại giá trị đã nhập #}
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required value="<%= query.email || '' %>"> {# Giữ lại giá trị đã nhập #}
+    </div>
+    <div>
+        <label for="password">Mật khẩu:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    {# Thêm các trường khác nếu cần #}
+    <button type="submit">Đăng ký</button>
+</form>
+
+<p>Đã có tài khoản? <a href="/auth/signin">Đăng nhập ngay!</a></p>  
