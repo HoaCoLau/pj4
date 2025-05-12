@@ -4,7 +4,7 @@ const Product = db.products;
 const Order = db.orders;
 const User = db.users;
 
-exports.showDashboard = async (req, res) => { // Sử dụng async
+exports.showDashboard = async (req, res) => { 
     req.log.info('Rendering admin dashboard');
     try {
         const productCount = await Product.count();

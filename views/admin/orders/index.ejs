@@ -19,7 +19,6 @@
                 <td><%= order.id %></td>
                 <td><%= order.user ? order.user.name : 'Khách (ID: ' + order.user_id + ')' %></td>
                 <td><%= order.order_date.toLocaleString() %></td>
-                {# Ép kiểu sang số trước khi gọi toFixed #}
                 <td><%= (order && order.total_amount !== null && order.total_amount !== undefined) ? parseFloat(order.total_amount).toFixed(2) : 'N/A' %> VND</td>
                 <td>
                     <span class="badge <%=

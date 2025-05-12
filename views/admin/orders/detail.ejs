@@ -10,7 +10,6 @@
         <p><strong>ID Đơn hàng:</strong> <%= order.id %></p>
         <p><strong>Người đặt:</strong> <%= order.user ? order.user.name + ' (' + order.user.email + ')' : 'Khách (ID: ' + order.user_id + ')' %></p>
         <p><strong>Ngày đặt:</strong> <%= order.order_date.toLocaleString() %></p>
-        {# Ép kiểu sang số trước khi gọi toFixed #}
         <p><strong>Tổng tiền:</strong> <%= (order && order.total_amount !== null && order.total_amount !== undefined) ? parseFloat(order.total_amount).toFixed(2) : 'N/A' %> VND</p>
         <p><strong>Trạng thái:</strong>
              <span class="badge <%=
@@ -29,7 +28,6 @@
         <p><strong>Phương thức thanh toán:</strong> <%= order.payment_method %></p>
         <p><strong>Ghi chú:</strong> <%= order.notes || 'Không có' %></p>
 
-        {# Form cập nhật trạng thái #}
         <h5 class="mt-4">Cập nhật trạng thái:</h5>
         <form action="/admin/orders/update-status/<%= order.id %>?_method=PUT" method="POST" class="row g-3 align-items-center">
             <input type="hidden" name="_method" value="PUT">
@@ -78,11 +76,8 @@
                                 Sản phẩm không xác định
                             <% } %>
                         </td>
-                         {# Kiểm tra detail.quantity và detail.price_at_addition trước khi tính/gọi toFixed #}
                         <td><%= (detail && detail.quantity !== null && detail.quantity !== undefined) ? detail.quantity : 'N/A' %></td>
-                        {# Ép kiểu sang số trước khi gọi toFixed #}
                         <td><%= (detail && detail.price_at_addition !== null && detail.price_at_addition !== undefined) ? parseFloat(detail.price_at_addition).toFixed(2) : 'N/A' %> VND</td>
-                        {# Ép kiểu sang số trước khi gọi toFixed #}
                         <td><%= (detail && detail.quantity !== null && detail.quantity !== undefined && detail.price_at_addition !== null && detail.price_at_addition !== undefined) ? (detail.quantity * parseFloat(detail.price_at_addition)).toFixed(2) : 'N/A' %> VND</td>
                     </tr>
                 <% }); %>

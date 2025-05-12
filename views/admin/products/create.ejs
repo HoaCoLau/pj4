@@ -4,7 +4,7 @@
 
 <div class="row">
     <div class="col-md-8">
-        <form action="/admin/products" method="POST">
+        <form action="/admin/products" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="name" class="form-label">Tên sản phẩm:</label>
                 <input type="text" class="form-control" id="name" name="name" required value="<%= query.name || '' %>">
@@ -27,8 +27,9 @@
                 <textarea class="form-control" id="description" name="description" rows="3"><%= query.description || '' %></textarea>
             </div>
              <div class="mb-3">
-                <label for="image_url" class="form-label">URL Ảnh:</label>
-                <input type="text" class="form-control" id="image_url" name="image_url" value="<%= query.image_url || '' %>">
+                <label for="image" class="form-label">Ảnh sản phẩm:</label>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                <small class="form-text text-muted">Chỉ cho phép file ảnh (JPG, PNG, GIF, v.v.). Kích thước tối đa 5MB.</small>
             </div>
              <div class="mb-3">
                 <label for="stock_quantity" class="form-label">Tồn kho:</label>

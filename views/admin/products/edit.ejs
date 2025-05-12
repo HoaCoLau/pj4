@@ -4,7 +4,7 @@
 
 <div class="row">
     <div class="col-md-8">
-        <form action="/admin/products/edit/<%= product.id %>?_method=PUT" method="POST">
+        <form action="/admin/products/edit/<%= product.id %>?_method=PUT" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="_method" value="PUT">
             <div class="mb-3">
                 <label for="name" class="form-label">Tên sản phẩm:</label>
@@ -27,10 +27,20 @@
                 <label for="description" class="form-label">Mô tả:</label>
                 <textarea class="form-control" id="description" name="description" rows="3"><%= query.description || product.description || '' %></textarea>
             </div>
-             <div class="mb-3">
-                <label for="image_url" class="form-label">URL Ảnh:</label>
-                <input type="text" class="form-control" id="image_url" name="image_url" value="<%= query.image_url || product.image_url || '' %>">
+
+            <div class="mb-3">
+                <label for="image" class="form-label">Ảnh sản phẩm:</label>
+                <% if (product.image_url) { %>
+                    <div class="mb-2">
+                        <img src="<%= product.image_url %>" alt="Ảnh hiện tại" style="max-width: 150px; height: auto;">
+                    </div>
+                <% } %>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                <small class="form-text text-muted">Chọn file ảnh mới để thay thế ảnh hiện tại. Kích thước tối đa 5MB.</small>
             </div>
+
+
+
              <div class="mb-3">
                 <label for="stock_quantity" class="form-label">Tồn kho:</label>
                 <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" value="<%= query.stock_quantity || product.stock_quantity || '0' %>">
