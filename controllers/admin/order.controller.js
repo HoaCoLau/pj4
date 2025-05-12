@@ -3,88 +3,75 @@ const Order = db.orders;
 const OrderDetail = db.orderDetails;
 const User = db.users;
 const Product = db.products;
-const Op = db.Op;
 const { updateOrderStatusSchema } = require("../../validation/order.validation.js");
 const logger = require('../../config/logger');
 
 // Render trang danh sách đơn hàng (Admin)
-exports.listOrders = async (req, res) => { // Sử dụng async
+exports.listOrders = async (req, res) => {
     req.log.info('Rendering admin order list');
-    try { // Bắt đầu try block
-        const data = await Order.findAll({ // Sử dụng await
+    try {
+        const data = await Order.findAll({
             include: [
                 { model: User, as: 'user', attributes: ['id', 'name', 'email'] },
                 { model: OrderDetail, as: 'orderDetails', include: [{ model: Product, as: 'product', attributes: ['id', 'name'] }] }
             ],
             order: [['order_date', 'DESC']]
         });
-        res.render("admin/orders/index", {
-            title: "Quản lý Đơn hàng",
-            orders: data,
-        });
-    } catch (err) { // Bắt đầu catch block
+        res.render("admin/orders/index", { title: "Quản lý Đơn hàng", orders: data });
+    } catch (err) {
         req.log.error({ err }, "Lỗi khi lấy danh sách đơn hàng.");
         res.status(500).render("user/errorPage", { title: "Lỗi Database", message: err.message || "Lỗi khi lấy danh sách đơn hàng." });
     }
 };
 
 // Render trang chi tiết đơn hàng (Admin)
-exports.orderDetail = async (req, res) => { // Sử dụng async
+exports.orderDetail = async (req, res) => {
     const id = req.params.orderId;
     req.log.info(`Rendering admin order detail for ID: ${id}`);
-    try { // Bắt đầu try block
-        const data = await Order.findByPk(id, { // Sử dụng await
+    try {
+        const data = await Order.findByPk(id, {
             include: [
                 { model: User, as: 'user', attributes: ['id', 'name', 'email'] },
                 { model: OrderDetail, as: 'orderDetails', include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'price', 'image_url'] }] }
             ]
         });
-        if (data) {
-            res.render("admin/orders/detail", {
-                title: `Chi tiết Đơn hàng #${data.id}`,
-                order: data,
-            });
-        } else {
-            req.log.warn(`Order not found for detail view: ${id}`);
-            res.status(404).render("user/errorPage", { title: "Không tìm thấy", message: `Không tìm thấy Đơn hàng với id=${id}.` });
-        }
-    } catch (err) { // Bắt đầu catch block
+        if (data) { res.render("admin/orders/detail", { title: `Chi tiết Đơn hàng #${data.id}`, order: data }); }
+        else { req.log.warn(`Order not found for detail view: ${id}`); res.status(404).render("user/errorPage", { title: "Không tìm thấy", message: `Không tìm thấy Đơn hàng với id=${id}.` }); }
+    } catch (err) {
         req.log.error({ err }, `Lỗi khi lấy chi tiết đơn hàng ${id}.`);
         res.status(500).render("user/errorPage", { title: "Lỗi Database", message: "Lỗi khi lấy chi tiết Đơn hàng: " + err.message });
     }
 };
 
 // Xử lý cập nhật trạng thái đơn hàng (POST với method-override PUT)
-exports.updateOrderStatusProcess = async (req, res) => { // Sử dụng async
+exports.updateOrderStatusProcess = async (req, res) => {
     const id = req.params.orderId;
-    const { error, value } = updateOrderStatusSchema.validate(req.body, { abortEarly: false });
-
+    const { error, value } = updateOrderStatusSchema.validate(req.body);
     if (error) {
-       req.log.warn(`Validation failed for order status update (${id}): ${error.details.map(x => x.message).join(', ')}`);
+       logger.warn(`Validation failed for order status update (${id}): ${error.details[0].message}`);
        return res.redirect(`/admin/orders/${id}?error=${error.details[0].message}`);
     }
-
-    try { // Bắt đầu try block
-      const num = await Order.update({ status: value.status }, { where: { id: id } }); // Sử dụng await
+    try {
+      const num = await Order.update({ status: value.status }, { where: { id: id } });
         if (num[0] === 1) {
-            req.log.info(`Order status updated for ID ${id} to ${value.status}`);
+            logger.info(`Order status updated for ID ${id} to ${value.status}`);
             res.redirect(`/admin/orders/${id}?success=Cập nhật trạng thái đơn hàng thành công!`);
         } else {
-            req.log.warn(`Order not found or no changes for status update: ${id}`);
+            logger.warn(`Order not found or no changes for status update: ${id}`);
             res.redirect(`/admin/orders/${id}?error=Không tìm thấy hoặc không có gì để cập nhật đơn hàng.`);
         }
-    } catch (err) { // Bắt đầu catch block
-        req.log.error({ err }, `Lỗi khi cập nhật trạng thái đơn hàng ${id}.`);
+    } catch (err) {
+        logger.error({ err }, `Lỗi khi cập nhật trạng thái đơn hàng ${id}.`);
         res.redirect(`/admin/orders/${id}?error=${err.message || "Đã xảy ra lỗi khi cập nhật trạng thái đơn hàng."}`);
     }
 };
 
 // Xử lý xóa đơn hàng (Admin) (POST với method-override DELETE)
-exports.deleteOrderProcess = async (req, res) => { // Sử dụng async
+exports.deleteOrderProcess = async (req, res) => {
     const id = req.params.orderId;
     req.log.info(`Attempting to delete order ID: ${id}`);
-    try { // Bắt đầu try block
-      const num = await Order.destroy({ where: { id: id } }); // Sử dụng await
+    try {
+      const num = await Order.destroy({ where: { id: id } });
         if (num === 1) {
             logger.info(`Order deleted: ${id}`);
             res.redirect("/admin/orders?success=Xóa đơn hàng thành công!");
@@ -92,7 +79,7 @@ exports.deleteOrderProcess = async (req, res) => { // Sử dụng async
              logger.warn(`Order not found for deletion: ${id}`);
              res.redirect("/admin/orders?error=Không tìm thấy đơn hàng để xóa.");
         }
-    } catch (err) { // Bắt đầu catch block
+    } catch (err) {
          logger.error({ err }, `Lỗi khi xóa đơn hàng ${id}.`);
          res.redirect(`/admin/orders?error=${err.message || "Đã xảy ra lỗi khi xóa đơn hàng."}`);
     }

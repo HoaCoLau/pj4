@@ -4,7 +4,9 @@
 
 <div class="row">
     <div class="col-md-8">
-        <form action="/admin/products/edit/<%= product.id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+        {# Thêm enctype="multipart/form-data" #}
+        {# Sửa action để submit đến /admin/products/:productId #}
+        <form action="/admin/products/<%= product.id %>?_method=PUT" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="_method" value="PUT">
             <div class="mb-3">
                 <label for="name" class="form-label">Tên sản phẩm:</label>
@@ -28,10 +30,12 @@
                 <textarea class="form-control" id="description" name="description" rows="3"><%= query.description || product.description || '' %></textarea>
             </div>
 
+            {# Hiển thị ảnh hiện tại và input type="file" để thay thế #}
             <div class="mb-3">
                 <label for="image" class="form-label">Ảnh sản phẩm:</label>
                 <% if (product.image_url) { %>
                     <div class="mb-2">
+                         {# Sử dụng đường dẫn tương đối từ public #}
                         <img src="<%= product.image_url %>" alt="Ảnh hiện tại" style="max-width: 150px; height: auto;">
                     </div>
                 <% } %>
@@ -39,6 +43,13 @@
                 <small class="form-text text-muted">Chọn file ảnh mới để thay thế ảnh hiện tại. Kích thước tối đa 5MB.</small>
             </div>
 
+             {# Nếu muốn cho phép xóa ảnh mà không upload cái mới, có thể thêm checkbox hoặc input hidden #}
+             {# <div class="form-check mb-3">
+                 <input class="form-check-input" type="checkbox" value="true" id="delete_image" name="delete_image">
+                 <label class="form-check-label" for="delete_image">
+                     Xóa ảnh hiện tại
+                 </label>
+             </div> #}
 
 
              <div class="mb-3">

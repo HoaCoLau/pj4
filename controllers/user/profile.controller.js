@@ -23,29 +23,27 @@ exports.editProfileForm = (req, res) => {
 };
 
 // Xử lý submit form chỉnh sửa profile (POST với method-override PUT)
-exports.updateProfileProcess = async (req, res) => { // Sử dụng async
+exports.updateProfileProcess = async (req, res) => {
     const userId = res.locals.user.id;
      const updateData = { ...req.body };
      delete updateData.password;
      delete updateData.role;
 
-     const { error, value } = userProfileUpdateSchema.validate(updateData, { abortEarly: false });
-
+     const { error, value } = userProfileUpdateSchema.validate(updateData);
      if (error) {
-        req.log.warn(`Validation failed for user profile update (user ${userId}): ${error.details.map(x => x.message).join(', ')}`);
+        logger.warn(`Validation failed for user profile update (user ${userId}): ${error.details[0].message}`);
         return res.redirect(`/user/profile/edit?error=${error.details[0].message}`);
      }
-
-    try { // Bắt đầu try block
-      const num = await User.update(value, { where: { id: userId } }); // Sử dụng await
+    try {
+      const num = await User.update(value, { where: { id: userId } });
         if (num[0] === 1) {
-            req.log.info(`User profile updated: ${userId}`);
+            logger.info(`User profile updated: ${userId}`);
             res.redirect("/user/profile?success=Cập nhật thông tin thành công!");
         } else {
              logger.warn(`User profile update resulted in no changes: ${userId}`);
              res.redirect("/user/profile/edit?error=Không có gì để cập nhật.");
         }
-    } catch (err) { // Bắt đầu catch block
+    } catch (err) {
          logger.error({ err }, `Lỗi khi cập nhật profile user ${userId}.`);
           if (err.name === 'SequelizeUniqueConstraintError' && err.fields && err.fields.email) {
              return res.redirect(`/user/profile/edit?error=Email đã tồn tại.`);

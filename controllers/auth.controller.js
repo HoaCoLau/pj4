@@ -13,44 +13,32 @@ exports.signupView = (req, res) => {
 };
 
 // Xử lý submit form đăng ký (POST)
-exports.signupProcess = async (req, res) => { // Sử dụng async
+exports.signupProcess = async (req, res) => {
   req.log.info('Processing signup form');
-  const { error, value } = signupSchema.validate(req.body, { abortEarly: false });
+  const { error, value } = signupSchema.validate(req.body);
 
   if (error) {
-    logger.warn(`Validation failed for signup: ${error.details.map(x => x.message).join(', ')}`);
-    const redirectParams = new URLSearchParams({ error: error.details[0].message });
-    if (req.body.name) redirectParams.append('name', req.body.name);
-    if (req.body.email) redirectParams.append('email', req.body.email);
-
-    return res.redirect(`/auth/signup?${redirectParams.toString()}`);
+    logger.warn(`Validation failed for signup: ${error.details[0].message}`);
+    return res.redirect(`/auth/signup?error=${error.details[0].message}`);
   }
 
-  try { // Bắt đầu try block
-    const user = await User.create({ // Sử dụng await
+  try {
+    await User.create({
       email: value.email,
       password: bcrypt.hashSync(value.password, 8),
       name: value.name,
       image: value.image,
       role: value.role
     });
-
-    logger.info(`New user signed up: ${user.email}`);
+    logger.info(`New user signed up: ${value.email}`);
     res.redirect("/auth/signin?success=Registration successful");
-
-  } catch (err) { // Bắt đầu catch block
+  } catch (err) {
      if (err.name === 'SequelizeUniqueConstraintError') {
          logger.warn(`Signup failed: Email already exists - ${value.email}`);
-         const redirectParams = new URLSearchParams({ error: "Email đã tồn tại." });
-         if (req.body.name) redirectParams.append('name', req.body.name);
-         if (req.body.email) redirectParams.append('email', req.body.email);
-         return res.redirect(`/auth/signup?${redirectParams.toString()}`);
+         return res.redirect("/auth/signup?error=Email đã tồn tại.");
      }
     logger.error({ err }, "Lỗi khi đăng ký User.");
-     const redirectParams = new URLSearchParams({ error: err.message || "Đã xảy ra lỗi khi đăng ký." });
-     if (req.body.name) redirectParams.append('name', req.body.name);
-     if (req.body.email) redirectParams.append('email', req.body.email);
-    res.redirect(`/auth/signup?${redirectParams.toString()}`);
+    res.redirect(`/auth/signup?error=${err.message || "Đã xảy ra lỗi khi đăng ký."}`);
   }
 };
 
@@ -61,34 +49,28 @@ exports.signinView = (req, res) => {
 };
 
 // Xử lý submit form đăng nhập (POST)
-exports.signinProcess = async (req, res) => { // Sử dụng async
+exports.signinProcess = async (req, res) => {
    req.log.info('Processing signin form');
-   const { error, value } = signinSchema.validate(req.body, { abortEarly: false });
+   const { error, value } = signinSchema.validate(req.body);
 
    if (error) {
-       logger.warn(`Validation failed for signin: ${error.details.map(x => x.message).join(', ')}`);
-        const redirectParams = new URLSearchParams({ error: error.details[0].message });
-        if (req.body.email) redirectParams.append('email', req.body.email);
-       return res.redirect(`/auth/signin?${redirectParams.toString()}`);
+       logger.warn(`Validation failed for signin: ${error.details[0].message}`);
+       return res.redirect(`/auth/signin?error=${error.details[0].message}`);
    }
 
-  try { // Bắt đầu try block
-    const user = await User.findOne({ where: { email: value.email } }); // Sử dụng await
+  try {
+    const user = await User.findOne({ where: { email: value.email } });
 
     if (!user) {
         logger.warn(`Signin failed: User not found - ${value.email}`);
-         const redirectParams = new URLSearchParams({ error: "User không tồn tại." });
-         if (req.body.email) redirectParams.append('email', req.body.email);
-        return res.redirect(`/auth/signin?${redirectParams.toString()}`);
+        return res.redirect("/auth/signin?error=User không tồn tại.");
     }
 
     const passwordIsValid = bcrypt.compareSync(value.password, user.password);
 
     if (!passwordIsValid) {
         logger.warn(`Signin failed: Invalid password for user - ${value.email}`);
-         const redirectParams = new URLSearchParams({ error: "Mật khẩu không đúng!" });
-         if (req.body.email) redirectParams.append('email', req.body.email);
-        return res.redirect(`/auth/signin?${redirectParams.toString()}`);
+        return res.redirect("/auth/signin?error=Mật khẩu không đúng!");
     }
 
     const token = jwt.sign({ id: user.id }, config.secret, { algorithm: 'HS256', expiresIn: 86400 });
@@ -98,11 +80,9 @@ exports.signinProcess = async (req, res) => { // Sử dụng async
 
     if (user.role === 'admin') { res.redirect("/admin"); } else { res.redirect("/"); }
 
-  } catch (err) { // Bắt đầu catch block
+  } catch (err) {
       logger.error({ err }, "Lỗi khi đăng nhập User.");
-      const redirectParams = new URLSearchParams({ error: err.message || "Đã xảy ra lỗi khi đăng nhập." });
-      if (req.body.email) redirectParams.append('email', req.body.email);
-      res.redirect(`/auth/signin?${redirectParams.toString()}`);
+      res.redirect(`/auth/signin?error=${err.message || "Đã xảy ra lỗi khi đăng nhập."}`);
   }
 };
 
