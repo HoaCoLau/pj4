@@ -9,7 +9,6 @@
     <div class="card-body">
         <p><strong>ID Đơn hàng:</strong> <%= order.id %></p>
         <p><strong>Ngày đặt:</strong> <%= order.order_date.toLocaleString() %></p>
-         {# Ép kiểu sang số trước khi gọi toFixed #}
         <p><strong>Tổng tiền:</strong> <%= (order && order.total_amount !== null && order.total_amount !== undefined) ? parseFloat(order.total_amount).toFixed(2) : 'N/A' %> VND</p>
         <p><strong>Trạng thái:</strong>
              <span class="badge <%=
@@ -57,11 +56,8 @@
                                 Sản phẩm không xác định
                             <% } %>
                         </td>
-                         {# Kiểm tra detail.quantity và detail.price_at_order trước khi tính/gọi toFixed #}
                         <td><%= (detail && detail.quantity !== null && detail.quantity !== undefined) ? detail.quantity : 'N/A' %></td>
-                        {# Ép kiểu sang số trước khi gọi toFixed #}
                         <td><%= (detail && detail.price_at_order !== null && detail.price_at_order !== undefined) ? parseFloat(detail.price_at_order).toFixed(2) : 'N/A' %> VND</td>
-                        {# Ép kiểu sang số trước khi gọi toFixed #}
                         <td><%= (detail && detail.quantity !== null && detail.quantity !== undefined && detail.price_at_order !== null && detail.price_at_order !== undefined) ? (detail.quantity * parseFloat(detail.price_at_order)).toFixed(2) : 'N/A' %> VND</td>
                     </tr>
                 <% }); %>

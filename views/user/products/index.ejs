@@ -2,7 +2,6 @@
 
 <h1><%= title %></h1>
 
-{# Form lọc và tìm kiếm #}
 <form action="/products" method="GET" class="row g-3 align-items-center mb-4">
     <div class="col-md-4">
         <label for="name" class="visually-hidden">Tìm kiếm</label>
@@ -32,7 +31,6 @@
                     <img src="<%= (product && product.image_url) ? product.image_url : '/images/placeholder.png' %>" class="card-img-top" alt="<%= product ? product.name : 'Sản phẩm' %>">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title"><%= product ? product.name : 'Sản phẩm không tên' %></h5>
-                        {# Ép kiểu sang số trước khi gọi toFixed #}
                         <p class="card-text"><strong>Giá:</strong> <%= (product && product.price !== null && product.price !== undefined) ? parseFloat(product.price).toFixed(2) : 'N/A' %> VND</p>
                         <p class="card-text"><small class="text-muted">Danh mục: <%= (product && product.category) ? product.category.name : 'N/A' %></small></p>
                         <div class="mt-auto">
@@ -56,4 +54,3 @@
     <% } %>
 </div>
 
-{# Thêm phân trang nếu cần #}

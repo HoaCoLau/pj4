@@ -1,33 +1,31 @@
-<% layout('layouts/user') -%>
+<% layout('layouts/admin') -%>
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-         <div class="card">
-            <div class="card-header">
-                <h1 class="text-center"><%= title %></h1>
-            </div>
+<h1><%= title %></h1>
+
+<p>Chào mừng bạn đến với bảng điều khiển Admin.</p>
+
+<div class="row mt-4">
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-primary">
             <div class="card-body">
-                <% if (query && query.error) { %>
-                    <div class="alert alert-danger"><%= query.error %></div>
-                <% } %>
-                <% if (query && query.success) { %>
-                    <div class="alert alert-success"><%= query.success %></div>
-                <% } %>
-
-                <form action="/auth/signin" method="POST">
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email:</label>
-                        <input type="email" class="form-control" id="email" name="email" required value="<%= query.email || '' %>">
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Mật khẩu:</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Đăng nhập</button>
-                    </div>
-                </form>
-                <p class="text-center mt-3">Chưa có tài khoản? <a href="/auth/signup">Đăng ký ngay!</a></p>
+                <h5 class="card-title"><i class="fas fa-box"></i> Tổng số Sản phẩm</h5>
+                <p class="card-text display-4"><%= productCount %></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-shopping-cart"></i> Tổng số Đơn hàng</h5>
+                <p class="card-text display-4"><%= orderCount %></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-users"></i> Tổng số Người dùng</h5>
+                <p class="card-text display-4"><%= userCount %></p>
             </div>
         </div>
     </div>

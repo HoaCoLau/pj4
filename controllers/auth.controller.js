@@ -21,12 +21,9 @@ exports.signupProcess = (req, res) => {
 
   if (error) {
     logger.warn(`Validation failed for signup: ${error.details.map(x => x.message).join(', ')}`);
-    // Truyền lại dữ liệu đã nhập (ngoại trừ mật khẩu) vào query params để giữ lại trên form
     const redirectParams = new URLSearchParams({ error: error.details[0].message });
     if (req.body.name) redirectParams.append('name', req.body.name);
     if (req.body.email) redirectParams.append('email', req.body.email);
-    // Không truyền mật khẩu
-    // if (req.body.image) redirectParams.append('image', req.body.image); // Nếu muốn giữ lại cả ảnh
 
     return res.redirect(`/auth/signup?${redirectParams.toString()}`);
   }

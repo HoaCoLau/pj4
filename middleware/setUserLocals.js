@@ -2,20 +2,18 @@
 const jwt = require('jsonwebtoken');
 const db = require('../models');
 const User = db.users;
-const config = require('../config/auth.config'); // Import config để lấy secret
+const config = require('../config/auth.config');
+const logger = require('../config/logger'); 
 
 module.exports = (req, res, next) => {
   const token = req.cookies.token;
 
   if (token) {
-    // ** Thêm log để kiểm tra secret khi xác minh token **
-    req.log.debug(`Verifying token with secret: ${config.secret ? 'Secret exists' : 'Secret is missing!'}`); // Log chỉ sự tồn tại
-
     jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
             res.locals.user = null;
             res.clearCookie("token");
-            req.log.warn("Token verification failed:", err.message); // Log cả message lỗi verify
+            req.log.warn(`Token verification failed: ${err.message}`);
         } else {
             User.findByPk(decoded.id)
                 .then(user => {

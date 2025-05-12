@@ -21,7 +21,6 @@
         <tbody>
             <% let cartTotal = 0; %>
             <% cart.cartDetails.forEach(item => { %>
-                {# Ép kiểu sang số trước khi tính tổng #}
                 <% const itemTotal = (item && item.quantity !== null && item.quantity !== undefined && item.price_at_addition !== null && item.price_at_addition !== undefined) ? item.quantity * parseFloat(item.price_at_addition) : 0; %>
                 <% cartTotal += itemTotal; %>
                 <tr>
@@ -35,10 +34,8 @@
                             Sản phẩm không xác định
                         <% } %>
                     </td>
-                    {# Ép kiểu sang số trước khi gọi toFixed #}
                     <td><%= (item && item.price_at_addition !== null && item.price_at_addition !== undefined) ? parseFloat(item.price_at_addition).toFixed(2) : 'N/A' %> VND</td>
                     <td>
-                        {# Form cập nhật số lượng #}
                         <% if (item && item.id && item.quantity !== null && item.quantity !== undefined) { %>
                             <form action="/user/cart/update/<%= item.id %>?_method=PUT" method="POST" class="d-flex align-items-center">
                                  <input type="hidden" name="_method" value="PUT">
@@ -49,10 +46,8 @@
                             N/A
                         <% } %>
                     </td>
-                    {# Ép kiểu sang số trước khi gọi toFixed #}
                     <td><%= parseFloat(itemTotal).toFixed(2) %> VND</td>
                     <td>
-                        {# Form xóa sản phẩm #}
                         <% if (item && item.id) { %>
                             <form action="/user/cart/remove/<%= item.id %>?_method=DELETE" method="POST" style="display:inline;">
                                 <input type="hidden" name="_method" value="DELETE">
@@ -68,14 +63,11 @@
         <tfoot>
             <tr>
                 <td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td>
-                {# Ép kiểu sang số trước khi gọi toFixed #}
                 <td><strong><%= parseFloat(cartTotal).toFixed(2) %> VND</strong></td>
                 <td></td>
             </tr>
         </tfoot>
     </table>
-
-    {# Form đặt hàng - cần thêm các trường địa chỉ, phương thức thanh toán #}
     <h2 class="mt-5">Thông tin đặt hàng</h2>
      <div class="row">
          <div class="col-md-8">
@@ -94,7 +86,6 @@
                          <option value="">Chọn phương thức</option>
                          <option value="cod">Thanh toán khi nhận hàng (COD)</option>
                          <option value="bank_transfer">Chuyển khoản ngân hàng</option>
-                         {# Thêm các phương thức khác #}
                      </select>
                  </div>
                   <div class="mb-3">

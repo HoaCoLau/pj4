@@ -23,7 +23,6 @@
                 <tr>
                     <td><%= order.id %></td>
                     <td><%= order.order_date.toLocaleString() %></td>
-                    {# Ép kiểu sang số trước khi gọi toFixed #}
                     <td><%= (order && order.total_amount !== null && order.total_amount !== undefined) ? parseFloat(order.total_amount).toFixed(2) : 'N/A' %> VND</td>
                     <td>
                          <span class="badge <%=
@@ -39,13 +38,11 @@
                     </td>
                     <td>
                         <a href="/user/orders/<%= order.id %>" class="btn btn-sm btn-info"><i class="fas fa-eye"></i> Chi tiết</a>
-                        {# Có thể thêm nút Hủy đơn hàng nếu trạng thái cho phép #}
                          <% if (order.status === 'pending' || order.status === 'processing') { %>
-                             {# Form hủy đơn hàng #}
-                             {# <form action="/user/orders/cancel/<%= order.id %>?_method=PUT" method="POST" style="display:inline;">
+                            <form action="/user/orders/cancel/<%= order.id %>?_method=PUT" method="POST" style="display:inline;">
                                  <input type="hidden" name="_method" value="PUT">
                                  <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?');"><i class="fas fa-times-circle"></i> Hủy</button>
-                             </form> #}
+                             </form> 
                          <% } %>
                     </td>
                 </tr>
