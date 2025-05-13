@@ -1,0 +1,49 @@
+{# views/admin/users/index.ejs #}
+<div class="container admin-list">
+    <h2><%= title %></h2>
+
+     {# Thông báo success/error được hiển thị ở layout #}
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ảnh</th>
+                <th>Email</th>
+                <th>Tên</th>
+                <th>Vai trò</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (users && users.length > 0) { %>
+                 <% users.forEach(user => { %>
+                     <tr>
+                         <td><%= user.id %></td>
+                          <td>
+                              <% if (user.image) { %>
+                                   <img src="<%= user.image %>" alt="<%= user.name %>" width="50">
+                              <% } else { %>
+                                   Không có ảnh
+                              <% } %>
+                          </td>
+                         <td><%= user.email %></td>
+                         <td><%= user.name %></td>
+                         <td><%= user.role %></td>
+                         <td>
+                             <a href="/admin/users/edit/<%= user.id %>">Sửa</a>
+                             {# Cẩn thận khi xóa người dùng, đặc biệt là Admin đang đăng nhập #}
+                             <form action="/admin/users/delete/<%= user.id %>" method="POST" style="display:inline;">
+                                 <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">Xóa</button>
+                             </form>
+                         </td>
+                     </tr>
+                 <% }); %>
+             <% } else { %>
+                 <tr>
+                     <td colspan="6">Chưa có người dùng nào.</td>
+                 </tr>
+             <% } %>
+        </tbody>
+    </table>
+</div>

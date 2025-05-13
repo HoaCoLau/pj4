@@ -1,0 +1,35 @@
+{# views/client/products/detail.ejs #}
+<div class="container product-detail"> {# Dùng class riêng cho trang chi tiết #}
+    <h2><%= product.name %></h2>
+
+    <div class="detail-content">
+        <div class="product-image">
+             <img src="<%= product.image_url || '/images/placeholder.jpg' %>" alt="<%= product.name %>">
+        </div>
+        <div class="product-info">
+            <p><strong>Giá:</strong> <%= product.price.toLocaleString('vi-VN') %> VNĐ</p>
+            <p><strong>Danh mục:</strong> <%= product.Category ? product.Category.name : 'Chưa phân loại' %></p>
+            <p><strong>Tồn kho:</strong> <%= product.stock_quantity %></p>
+            <p><strong>Mô tả:</strong></p>
+            <p><%= product.description %></p>
+
+             {# Form Thêm vào giỏ hàng #}
+             <% if (locals.user && product.stock_quantity > 0) { %>
+                 <form action="/cart/add" method="POST">
+                      <input type="hidden" name="productId" value="<%= product.id %>">
+                      <div>
+                           <label for="quantity">Số lượng:</label>
+                           {# Kiểm tra số lượng tồn kho để giới hạn input #}
+                           <input type="number" id="quantity" name="quantity" value="1" min="1" max="<%= product.stock_quantity %>">
+                      </div>
+                      <button type="submit">Thêm vào giỏ hàng</button>
+                 </form>
+             <% } else if (product.stock_quantity <= 0) { %>
+                 <p style="color: red;">Sản phẩm hiện đã hết hàng.</p>
+             <% } else { %>
+                 <p>Vui lòng <a href="/auth/login">đăng nhập</a> để thêm sản phẩm vào giỏ hàng.</p>
+             <% } %>
+
+        </div>
+    </div>
+</div>

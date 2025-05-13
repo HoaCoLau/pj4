@@ -1,0 +1,29 @@
+{# views/partials/client_header.ejs #}
+<header>
+    <div class="container"> {# Dùng class container để căn giữa nội dung #}
+        <div class="logo">
+            <a href="/">Furniture Store</a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang chủ</a></li>
+                <li><a href="/products">Sản phẩm</a></li>
+                <li><a href="/cart">Giỏ hàng</a></li>
+                <% if (user) { %> {# Biến user được truyền từ layout #}
+                    <li><a href="/orders">Đơn hàng của tôi</a></li>
+                     <% if (user.role === 'admin') { %>
+                          <li><a href="/admin">Quản lý Admin</a></li>
+                     <% } %>
+                    <li class="user-info">
+                         Chào, <%= user.name %>
+                         {# Có thể thêm dropdown menu cho profile, settings... #}
+                    </li>
+                    <li><a href="/auth/logout">Đăng xuất</a></li>
+                <% } else { %>
+                    <li><a href="/auth/login">Đăng nhập</a></li>
+                    <li><a href="/auth/register">Đăng ký</a></li>
+                <% } %>
+            </ul>
+        </nav>
+    </div>
+</header>

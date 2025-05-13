@@ -1,58 +1,12 @@
-<%# layout('admin/layouts/main') %> <div class="row">
-    <div class="col-md-3 mb-3">
-        <div class="card text-white bg-primary">
-            <div class="card-body">
-                <h5 class="card-title">Tổng Sản phẩm</h5>
-                <p class="card-text fs-4"><%= locals.stats && stats.totalProducts !== undefined ? stats.totalProducts : 'N/A' %></p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-white bg-success">
-            <div class="card-body">
-                <h5 class="card-title">Tổng Đơn hàng</h5>
-                <p class="card-text fs-4"><%= locals.stats && stats.totalOrders !== undefined ? stats.totalOrders : 'N/A' %></p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-white bg-info">
-            <div class="card-body">
-                <h5 class="card-title">Tổng User (khách)</h5>
-                <p class="card-text fs-4"><%= locals.stats && stats.totalUsers !== undefined ? stats.totalUsers : 'N/A' %></p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-white bg-warning">
-            <div class="card-body">
-                <h5 class="card-title">Đơn hàng Chờ xử lý</h5>
-                <p class="card-text fs-4"><%= locals.stats && stats.pendingOrders !== undefined ? stats.pendingOrders : 'N/A' %></p>
-            </div>
-        </div>
-    </div>
-     <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Tổng Danh mục</h5>
-                <p class="card-text fs-4"><%= locals.stats && stats.totalCategories !== undefined ? stats.totalCategories : 'N/A' %></p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Doanh thu (Đã giao)</h5>
-                <p class="card-text fs-4"><%= locals.stats && stats.totalRevenue !== undefined ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(stats.totalRevenue) : 'N/A' %></p>
-            </div>
-        </div>
-    </div>
-     <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Đơn hàng mới (7 ngày)</h5>
-                <p class="card-text fs-4"><%= locals.stats && stats.recentOrdersCount !== undefined ? stats.recentOrdersCount : 'N/A' %></p>
-            </div>
-        </div>
+{# views/admin/dashboard.ejs #}
+<div class="container admin-dashboard">
+    <h2><%= title %></h2>
+    <p>Chào mừng bạn đến với trang quản trị.</p>
+
+    <div class="dashboard-links">
+        <p><a href="/admin/products">Quản lý Sản phẩm</a></p>
+        <p><a href="/admin/categories">Quản lý Danh mục</a></p>
+        <p><a href="/admin/users">Quản lý Người dùng</a></p>
+        <p><a href="/admin/orders">Quản lý Đơn hàng</a></p>
     </div>
 </div>

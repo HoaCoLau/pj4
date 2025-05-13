@@ -1,124 +1,102 @@
 // app.js
-require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const session = require('express-session'); // Cần cho connect-flash
-const flash = require('connect-flash');   // Để hiển thị thông báo
-const logger = require('./config/logger.config');
-const authMiddleware = require('./middleware/auth.middleware');
-const db = require('./models'); // Import Sequelize db setup từ models/index.js
+const logger = require('pino-http')(); // Sử dụng pino-http cho Express
+const db = require('./models'); // Import models/index.js
+const { authenticate, authorizeAdmin, attachUserToLocals } = require('./middleware/authMiddleware'); // Import middleware xác thực và phân quyền
+const dotenv = require('dotenv');
+const fs = require('fs'); // Import fs để tạo thư mục upload
+const expressEjsLayouts = require('express-ejs-layouts'); // Import thư viện
+
+dotenv.config(); // Load biến môi trường
 
 const app = express();
 
-// Session middleware (phải có TRƯỚC flash và các route dùng session)
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'a_very_strong_and_long_secret_key_for_session',
-    resave: false,
-    saveUninitialized: true, // true để connect-flash hoạt động đúng khi chưa có session
-    cookie: {
-        secure: process.env.NODE_ENV === 'production', // Chỉ gửi cookie qua HTTPS ở production
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // Ví dụ: 1 ngày
-    }
-}));
-
-// Flash messages middleware
-app.use(flash());
-
-// Middleware để truyền flash messages và user cho tất cả views
-// Phải đặt SAU session và flash, TRƯỚC authMiddleware.verifyTokenAndAttachUser nếu muốn nó ghi đè
-// hoặc đặt SAU authMiddleware.verifyTokenAndAttachUser để nó có thể dùng req.user
-app.use((req, res, next) => {
-    // Các biến này sẽ có sẵn trong tất cả các template EJS
-    res.locals.success_msg = req.flash('success_msg');
-    res.locals.error_msg = req.flash('error_msg');
-    // Có thể bạn cũng muốn truyền các loại flash khác nếu dùng (vd: 'info_msg')
-    // currentUser và isLoggedIn sẽ được set bởi verifyTokenAndAttachUser
-    next();
-});
 
 
-// Middleware cơ bản
-app.use(express.json()); // Parse JSON request bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
-app.use(cookieParser()); // Parse cookies
-
-// View Engine Setup
-app.set('view engine', 'ejs');
+// View engine setup
 app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
-// Static Files (CSS, JS client-side, images)
-app.use(express.static(path.join(__dirname, 'public')));
+// Middleware
+app.use(expressEjsLayouts); // Sử dụng middleware layout NGAY SAU cấu hình view engine
+app.set('layout', 'layouts/main'); 
+app.use(logger); // Pino logger (sử dụng pino-http)
+app.use(express.json()); // Parse JSON request body
+app.use(express.urlencoded({ extended: false })); // Parse URL-encoded request body
+app.use(cookieParser()); // Parse cookies
+app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
 
-// Request Logger (đơn giản)
-app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url} - IP: ${req.ip}`);
-  next();
+// Middleware để gắn thông tin user vào res.locals cho views, áp dụng cho mọi request
+app.use(attachUserToLocals);
+
+
+// Import routes
+const authRouter = require('./routes/auth');
+// Client routes
+const clientIndexRoutes = require('./routes/client/index'); // Trang chủ
+const clientProductRoutes = require('./routes/client/products'); // Danh sách/Chi tiết sản phẩm
+const clientCartRoutes = require('./routes/client/cart'); // Giỏ hàng
+const clientOrderRoutes = require('./routes/client/orders'); // Đơn hàng của user, Checkout
+
+// Admin routes
+const adminProductRoutes = require('./routes/admin/products');
+const adminCategoryRoutes = require('./routes/admin/categories');
+const adminUserRoutes = require('./routes/admin/users');
+const adminOrderRoutes = require('./routes/admin/orders');
+
+
+// Sử dụng routes
+
+// Routes xác thực (không cần authenticate)
+app.use('/auth', authRouter);
+
+// Routes dành cho người dùng (client)
+app.use('/', clientIndexRoutes); // Trang chủ và các route công khai khác
+app.use('/products', clientProductRoutes); // Trang sản phẩm (công khai)
+// Các route client cần đăng nhập sẽ áp dụng middleware `authenticate` trong file route tương ứng
+app.use('/cart', clientCartRoutes); // Middleware `authenticate` được áp dụng trong routes/client/cart.js
+app.use('/orders', clientOrderRoutes); // Middleware `authenticate` được áp dụng trong routes/client/orders.js
+
+
+// Routes dành cho Admin
+// Các route admin sẽ áp dụng cả authenticate và authorizeAdmin middleware trong từng file route
+app.use('/admin/products', adminProductRoutes);
+app.use('/admin/categories', adminCategoryRoutes);
+app.use('/admin/users', adminUserRoutes);
+app.use('/admin/orders', adminOrderRoutes);
+// Thêm route cho trang dashboard admin nếu có
+app.get('/admin', authenticate, authorizeAdmin, (req, res) => { // Có thể dùng '/admin' làm dashboard
+    res.redirect('/admin/dashboard'); // Chuyển hướng tới dashboard
+});
+app.get('/admin/dashboard', authenticate, authorizeAdmin, (req, res) => {
+    // Render trang dashboard admin
+    res.render('admin/dashboard', { title: 'Dashboard Admin' }); // Cần tạo file views/admin/dashboard.ejs
 });
 
-// Middleware xác thực token và gắn user vào request (CHẠY CHO MỌI REQUEST)
-app.use(authMiddleware.verifyTokenAndAttachUser);
 
-// --- Routes ---
-const authRoutes = require('./routes/auth.routes');
-const userRoutes = require('./routes/user.routes');
-const adminRoutes = require('./routes/admin.routes');
-// const cartRoutes = require('./routes/cart.routes'); // Sẽ tạo sau
-// const orderRoutes = require('./routes/order.routes'); // Sẽ tạo sau
-
-app.use('/auth', authRoutes);
-app.use('/admin', authMiddleware.isLoggedIn, authMiddleware.isAdmin, adminRoutes); // Admin routes được bảo vệ
-// app.use('/cart', isLoggedIn, cartRoutes); // Cart routes cần đăng nhập
-// app.use('/orders', isLoggedIn, orderRoutes); // Order routes cần đăng nhập
-app.use('/', userRoutes); // User routes (công khai và cần đăng nhập sẽ xử lý bên trong)
-
-
-// --- Đồng bộ Database với Sequelize (CHỈ NÊN DÙNG CHO DEVELOPMENT) ---
-if (process.env.NODE_ENV === 'development') {
-    db.syncDb({ alter: true }) // { alter: true } cố gắng cập nhật bảng, { force: true } xóa và tạo lại
-        .then(() => {
-            logger.info("Development: Sequelize DB Sync completed (alter:true).");
-            // (Tùy chọn) Seed data ở đây nếu database rỗng hoặc mới được tạo
-        })
-        .catch(err => {
-            logger.error("Development: Sequelize DB Sync error:", err);
-            // Có thể dừng server ở đây nếu DB sync thất bại và là điều kiện tiên quyết
-            // process.exit(1);
-        });
-}
-// --------------------------------------------------------------------
-
-// 404 Error Handler (phải là middleware cuối cùng trước error handler chung)
-app.use((req, res, next) => {
-  res.status(404).render('user/error', { // Giả sử có view lỗi chung
-      layout: 'user/layouts/main', // Nếu dùng layout
-      title: '404 - Không tìm thấy trang',
-      message: 'Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.'
-  });
+// Catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  res.status(404).send('Không tìm thấy trang!'); // Hoặc render view 404
 });
 
-// General Error Handler (phải có 4 tham số: err, req, res, next)
-app.use((err, req, res, next) => {
-  logger.error({
-      message: err.message,
-      name: err.name,
-      status: err.status || 500,
-      stack: err.stack,
-      url: req.originalUrl,
-      method: req.method
-  }, 'Unhandled application error');
+// Error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  const status = err.status || 500;
-  const message = err.message || 'Đã có lỗi xảy ra trên máy chủ.';
+  console.error('App Error:', err.stack); // Log lỗi chi tiết trên console server
 
-  res.status(status).render('user/error', { // View lỗi chung
-    layout: 'user/layouts/main', // Nếu dùng layout
-    title: `Lỗi ${status}`,
-    message: (process.env.NODE_ENV === 'development' || status < 500) ? message : 'Đã có lỗi xảy ra, vui lòng thử lại sau.',
-    // Chỉ hiển thị stack trace chi tiết ở development cho lỗi 500
-    errorDetail: process.env.NODE_ENV === 'development' ? err.stack : null
-  });
+  // render the error page
+  res.status(err.status || 500);
+  res.send('Có lỗi xảy ra ở máy chủ! Vui lòng thử lại sau.'); // Hoặc render view error
 });
 
-module.exports = app;   
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server đang chạy trên http://localhost:${PORT}/`);
+});
+
+module.exports = app;

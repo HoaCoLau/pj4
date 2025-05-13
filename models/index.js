@@ -1,60 +1,66 @@
 // models/index.js
-const sequelize = require('../config/sequelize.config');
-const { DataTypes, Sequelize: SequelizeConstructor } = require('sequelize');
-const logger = require('../config/logger.config');
+const { Sequelize, DataTypes } = require('sequelize');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
+  host: process.env.DB_HOST,
+  dialect: process.env.DB_DIALECT,
+  logging: false, // Đặt true để thấy các câu lệnh SQL được thực thi
+  timezone: '+07:00', // Đảm bảo múi giờ phù hợp
+});
 
 const db = {};
 
+db.Sequelize = Sequelize;
 db.sequelize = sequelize;
-db.Sequelize = SequelizeConstructor;
 
-// Import models
-db.User = require('./user.model.js')(sequelize, DataTypes);
-db.Category = require('./category.model.js')(sequelize, DataTypes);
-db.Product = require('./product.model.js')(sequelize, DataTypes);
-db.Cart = require('./cart.model.js')(sequelize, DataTypes);
-db.CartDetail = require('./cartDetail.model.js')(sequelize, DataTypes);
-db.Order = require('./order.model.js')(sequelize, DataTypes);
-db.OrderDetail = require('./orderDetail.model.js')(sequelize, DataTypes);
+// Import các model
+db.user = require('./user')(sequelize, DataTypes);
+db.category = require('./category')(sequelize, DataTypes);
+db.product = require('./product')(sequelize, DataTypes);
+db.order = require('./order')(sequelize, DataTypes);
+db.orderDetail = require('./orderDetail')(sequelize, DataTypes);
+db.cart = require('./cart')(sequelize, DataTypes);
+db.cartDetail = require('./cartDetail')(sequelize, DataTypes);
 
-// --- Associations ---
-// User - Cart (One-to-One, do user_id trong carts là UNIQUE)
-db.User.hasOne(db.Cart, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
-db.Cart.belongsTo(db.User, { foreignKey: 'user_id' });
+// Định nghĩa các mối quan hệ (Associations) dựa trên pj4.sql
 
-// Cart - CartDetail (One-to-Many)
-db.Cart.hasMany(db.CartDetail, { as: 'items', foreignKey: 'cart_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
-db.CartDetail.belongsTo(db.Cart, { foreignKey: 'cart_id' });
+// User và Order (Một User có nhiều Order)
+db.user.hasMany(db.order, { foreignKey: 'user_id' });
+db.order.belongsTo(db.user, { foreignKey: 'user_id' });
 
-// Product - CartDetail
-db.Product.hasMany(db.CartDetail, { foreignKey: 'product_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
-db.CartDetail.belongsTo(db.Product, { foreignKey: 'product_id' });
+// Category và Product (Một Category có nhiều Product)
+db.category.hasMany(db.product, { foreignKey: 'category_id' });
+db.product.belongsTo(db.category, { foreignKey: 'category_id' });
 
-// Category - Product (One-to-Many)
-db.Category.hasMany(db.Product, { foreignKey: 'category_id', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
-db.Product.belongsTo(db.Category, { as: 'category', foreignKey: 'category_id' });
+// Order và OrderDetail (Một Order có nhiều OrderDetail)
+db.order.hasMany(db.orderDetail, { foreignKey: 'order_id' });
+db.orderDetail.belongsTo(db.order, { foreignKey: 'order_id' });
 
-// User - Order (One-to-Many)
-db.User.hasMany(db.Order, { foreignKey: 'user_id', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
-db.Order.belongsTo(db.User, { foreignKey: 'user_id' });
+// OrderDetail và Product (Một OrderDetail liên kết với một Product, có thể null nếu sản phẩm bị xóa)
+db.product.hasMany(db.orderDetail, { foreignKey: 'product_id' });
+db.orderDetail.belongsTo(db.product, { foreignKey: 'product_id' });
 
-// Order - OrderDetail (One-to-Many)
-db.Order.hasMany(db.OrderDetail, { as: 'details', foreignKey: 'order_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
-db.OrderDetail.belongsTo(db.Order, { foreignKey: 'order_id' });
+// User và Cart (Một User có một Cart duy nhất)
+db.user.hasOne(db.cart, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+db.cart.belongsTo(db.user, { foreignKey: 'user_id' });
 
-// Product - OrderDetail
-db.Product.hasMany(db.OrderDetail, { foreignKey: 'product_id', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
-db.OrderDetail.belongsTo(db.Product, { foreignKey: 'product_id' });
+// Cart và CartDetail (Một Cart có nhiều CartDetail)
+db.cart.hasMany(db.cartDetail, { foreignKey: 'cart_id', onDelete: 'CASCADE' });
+db.cartDetail.belongsTo(db.cart, { foreignKey: 'cart_id' });
 
-// Sync function (for development)
-db.syncDb = async (options = {}) => {
-    try {
-        await sequelize.sync(options);
-        logger.info(`Database synchronized successfully. Options: ${JSON.stringify(options)}`);
-    } catch (error) {
-        logger.error('Error synchronizing database:', error);
-        throw error;
-    }
-};
+// CartDetail và Product (Một CartDetail liên kết với một Product)
+db.product.hasMany(db.cartDetail, { foreignKey: 'product_id' });
+db.cartDetail.belongsTo(db.product, { foreignKey: 'product_id' });
+
+
+// Đồng bộ model với database (Chỉ chạy lần đầu hoặc khi có thay đổi schema lớn - cẩn thận với dữ liệu hiện có)
+// db.sequelize.sync({ force: true }) // force: true sẽ xóa bảng cũ và tạo lại
+//   .then(() => {
+//     console.log('Database & tables created!');
+//   })
+//   .catch(err => console.log(err));
 
 module.exports = db;

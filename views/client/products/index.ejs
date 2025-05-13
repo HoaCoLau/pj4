@@ -1,0 +1,51 @@
+{# views/client/products/index.ejs #}
+<div class="container">
+    <h2><%= title %></h2>
+
+    <div class="filters">
+        <form action="/products" method="GET">
+            <label for="category">Danh mục:</label>
+            <select name="category" id="category" onchange="this.form.submit()"> {# Submit form khi chọn danh mục #}
+                <option value="">Tất cả danh mục</option>
+                <% categories.forEach(category => { %>
+                    <option value="<%= category.id %>" <%= selectedCategoryId == category.id ? 'selected' : '' %>>
+                        <%= category.name %>
+                    </option>
+                <% }); %>
+            </select>
+
+            <label for="search">Tìm kiếm:</label>
+            <input type="text" id="search" name="search" value="<%= searchQuery || '' %>">
+            <button type="submit">Tìm kiếm</button>
+             <% if (selectedCategoryId || searchQuery) { %> {# Hiển thị nút Reset Filter nếu có filter #}
+                 <a href="/products" class="button">Reset Filter</a>
+             <% } %>
+        </form>
+    </div>
+
+    <div class="product-list">
+        <% if (products && products.length > 0) { %>
+            <% products.forEach(product => { %>
+                <div class="product-item">
+                     <a href="/products/<%= product.id %>">
+                         <img src="<%= product.image_url || '/images/placeholder.jpg' %>" alt="<%= product.name %>">
+                         <h3><%= product.name %></h3>
+                         <p><%= product.price.toLocaleString('vi-VN') %> VNĐ</p>
+                     </a>
+                      {# Nút Thêm vào giỏ hàng - chỉ hiển thị nếu có user và sản phẩm còn hàng #}
+                     <% if (locals.user && product.stock_quantity > 0) { %>
+                         <form action="/cart/add" method="POST" style="display: inline-block;">
+                              <input type="hidden" name="productId" value="<%= product.id %>">
+                              <input type="hidden" name="quantity" value="1"> {# Mặc định thêm 1 sản phẩm #}
+                              <button type="submit">Thêm vào giỏ</button>
+                         </form>
+                     <% } else if (product.stock_quantity <= 0) { %>
+                          <span style="color: red;">Hết hàng</span>
+                     <% } %>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p>Không tìm thấy sản phẩm nào.</p>
+        <% } %>
+    </div>
+</div>

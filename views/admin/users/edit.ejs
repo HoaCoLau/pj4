@@ -1,0 +1,38 @@
+{# views/admin/users/edit.ejs #}
+<div class="container admin-form">
+    <h2><%= title %></h2>
+     {# Error messages được hiển thị ở layout #}
+
+    <form action="/admin/users/edit/<%= user.id %>" method="POST" enctype="multipart/form-data">
+        <div>
+            <label for="email">Email:</label>
+            {# Không cho phép sửa email qua form này #}
+            <input type="email" id="email" name="email" value="<%= user.email %>" disabled>
+            <input type="hidden" name="email" value="<%= user.email %>"> {# Gửi email qua hidden field nếu cần #}
+        </div>
+        <div>
+            <label for="name">Tên:</label>
+            <input type="text" id="name" name="name" value="<%= typeof oldInput !== 'undefined' ? oldInput.name : user.name %>" required>
+        </div>
+        <div>
+            <label for="role">Vai trò:</label>
+            <select id="role" name="role" required>
+                <option value="user" <%= (typeof oldInput !== 'undefined' && oldInput.role === 'user') || (typeof oldInput === 'undefined' && user.role === 'user') ? 'selected' : '' %>>user</option>
+                <option value="admin" <%= (typeof oldInput !== 'undefined' && oldInput.role === 'admin') || (typeof oldInput === 'undefined' && user.role === 'admin') ? 'selected' : '' %>>admin</option>
+            </select>
+        </div>
+         <div>
+              <label for="image">Ảnh đại diện hiện tại:</label>
+              <% if (user.image) { %>
+                   <img src="<%= user.image %>" alt="<%= user.name %>" width="100"><br>
+                   <small><%= user.image %></small>
+               <% } else { %>
+                    <p>Không có ảnh hiện tại.</p>
+               <% } %>
+              <label for="image">Cập nhật ảnh mới:</label>
+              <input type="file" id="image" name="image" accept="image/*">
+          </div>
+        <button type="submit">Cập nhật Người dùng</button>
+         <a href="/admin/users" class="button">Hủy</a>
+    </form>
+</div>

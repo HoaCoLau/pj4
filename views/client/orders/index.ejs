@@ -1,0 +1,34 @@
+{# views/client/orders/index.ejs #}
+<div class="container order-history">
+    <h2><%= title %></h2>
+
+    <% if (orders && orders.length > 0) { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã Đơn hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% orders.forEach(order => { %>
+                    <tr>
+                        <td><%= order.id %></td>
+                        <td><%= new Date(order.order_date).toLocaleString('vi-VN') %></td>
+                        <td><%= order.total_amount.toLocaleString('vi-VN') %> VNĐ</td>
+                        <td><%= order.status %></td>
+                        <td>
+                            <a href="/orders/<%= order.id %>">Xem chi tiết</a>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p>Bạn chưa có đơn hàng nào.</p>
+         <a href="/products" class="button">Bắt đầu mua sắm</a>
+    <% } %>
+</div>

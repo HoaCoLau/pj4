@@ -1,0 +1,42 @@
+{# views/admin/orders/index.ejs #}
+<div class="container admin-list">
+    <h2><%= title %></h2>
+
+     {# Thông báo success/error được hiển thị ở layout #}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Mã Đơn hàng</th>
+                <th>Người đặt</th>
+                <th>Ngày đặt</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (orders && orders.length > 0) { %>
+                 <% orders.forEach(order => { %>
+                     <tr>
+                         <td><%= order.id %></td>
+                         <td><%= order.User ? order.User.name : 'Người dùng đã xóa' %> (#<%= order.user_id || 'N/A' %>)</td>
+                         <td><%= new Date(order.order_date).toLocaleString('vi-VN') %></td>
+                         <td><%= order.total_amount.toLocaleString('vi-VN') %> VNĐ</td>
+                         <td><%= order.status %></td>
+                         <td>
+                             <a href="/admin/orders/detail/<%= order.id %>">Xem chi tiết</a>
+                             <form action="/admin/orders/delete/<%= order.id %>" method="POST" style="display:inline;">
+                                 <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa đơn hàng này?');">Xóa</button>
+                             </form>
+                         </td>
+                     </tr>
+                 <% }); %>
+             <% } else { %>
+                 <tr>
+                     <td colspan="6">Chưa có đơn hàng nào.</td>
+                 </tr>
+             <% } %>
+        </tbody>
+    </table>
+</div>

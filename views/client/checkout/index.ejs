@@ -1,0 +1,67 @@
+{# views/client/checkout/index.ejs #}
+<div class="container checkout-page">
+    <h2><%= title %></h2>
+
+    <% if (cart && cart.CartDetails && cart.CartDetails.length > 0) { %>
+        <h3>Thông tin đơn hàng:</h3>
+        <table>
+             <thead>
+                 <tr>
+                     <th>Sản phẩm</th>
+                     <th>Số lượng</th>
+                     <th>Giá</th>
+                     <th>Thành tiền</th>
+                 </tr>
+             </thead>
+             <tbody>
+                 <% cart.CartDetails.forEach(item => { %>
+                      <tr>
+                          <td><%= item.Product ? item.Product.name : 'Sản phẩm đã xóa' %></td>
+                           <td><%= item.quantity %></td>
+                           <td><%= item.price_at_addition.toLocaleString('vi-VN') %> VNĐ</td>
+                           <td><%= (item.quantity * item.price_at_addition).toLocaleString('vi-VN') %> VNĐ</td>
+                      </tr>
+                 <% }); %>
+             </tbody>
+             <tfoot>
+                  <tr>
+                       <td colspan="3" style="text-align: right;"><strong>Tổng tiền:</strong></td>
+                       <td><strong><%= total.toLocaleString('vi-VN') %> VNĐ</strong></td>
+                  </tr>
+             </tfoot>
+        </table>
+
+        <h3>Địa chỉ giao hàng và thanh toán:</h3>
+         {# Error messages được hiển thị ở layout #}
+
+        <form action="/orders/checkout" method="POST">
+             <div>
+                  <label for="shipping_address">Địa chỉ giao hàng:</label>
+                  <textarea id="shipping_address" name="shipping_address" required><%= typeof oldInput !== 'undefined' ? oldInput.shipping_address : '' %></textarea>
+             </div>
+             <div>
+                  <label for="billing_address">Địa chỉ thanh toán (Nếu khác địa chỉ giao hàng):</label>
+                  <textarea id="billing_address" name="billing_address"><%= typeof oldInput !== 'undefined' ? oldInput.billing_address : '' %></textarea>
+             </div>
+             <div>
+                  <label for="payment_method">Phương thức thanh toán:</label>
+                  <select id="payment_method" name="payment_method" required>
+                       <option value="">-- Chọn phương thức --</option>
+                       <option value="cod" <%= typeof oldInput !== 'undefined' && oldInput.payment_method === 'cod' ? 'selected' : '' %>>Thanh toán khi nhận hàng (COD)</option>
+                       {# Thêm các phương thức khác nếu có #}
+                       {# <option value="transfer" <%= typeof oldInput !== 'undefined' && oldInput.payment_method === 'transfer' ? 'selected' : '' %>>Chuyển khoản ngân hàng</option> #}
+                  </select>
+             </div>
+              <div>
+                  <label for="notes">Ghi chú (Tùy chọn):</label>
+                  <textarea id="notes" name="notes"><%= typeof oldInput !== 'undefined' ? oldInput.notes : '' %></textarea>
+             </div>
+
+             <button type="submit">Hoàn tất đặt hàng</button>
+        </form>
+
+    <% } else { %>
+        <p>Giỏ hàng trống, không thể thanh toán.</p>
+         <a href="/cart">Xem giỏ hàng</a>
+    <% } %>
+</div>

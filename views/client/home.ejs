@@ -1,0 +1,19 @@
+{# views/client/home.ejs #}
+<div class="container">
+    <h2>Sản phẩm mới nhất</h2>
+    <div class="product-list">
+        <% if (latestProducts && latestProducts.length > 0) { %>
+            <% latestProducts.forEach(product => { %>
+                <div class="product-item">
+                    <a href="/products/<%= product.id %>">
+                        <img src="<%= product.image_url || '/images/placeholder.jpg' %>" alt="<%= product.name %>">
+                        <h3><%= product.name %></h3>
+                        <p><%= product.price.toLocaleString('vi-VN') %> VNĐ</p>
+                    </a>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p>Không có sản phẩm mới nào để hiển thị.</p>
+        <% } %>
+    </div>
+</div>

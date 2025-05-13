@@ -1,0 +1,56 @@
+{# views/client/cart/index.ejs #}
+<div class="container cart-page">
+    <h2><%= title %></h2>
+
+    <% if (cart && cart.CartDetails && cart.CartDetails.length > 0) { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Ảnh</th>
+                    <th>Giá</th> {# Giá tại thời điểm thêm vào giỏ #}
+                    <th>Số lượng</th>
+                    <th>Tổng tiền</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% cart.CartDetails.forEach(item => { %>
+                    <tr>
+                        <td><%= item.Product ? item.Product.name : 'Sản phẩm đã xóa' %></td>
+                         <td>
+                             <% if (item.Product && item.Product.image_url) { %>
+                                  <img src="<%= item.Product.image_url %>" alt="<%= item.Product.name %>" width="50">
+                             <% } else { %>
+                                  Không có ảnh
+                             <% } %>
+                         </td>
+                        <td><%= item.price_at_addition.toLocaleString('vi-VN') %> VNĐ</td>
+                        <td>
+                            <form action="/cart/update/<%= item.id %>" method="POST" style="display:inline-block;">
+                                 {# Cần kiểm tra lại số lượng tồn kho thực tế nếu muốn giới hạn input number #}
+                                <input type="number" name="quantity" value="<%= item.quantity %>" min="1" style="width: 60px;">
+                                <button type="submit">Cập nhật</button>
+                            </form>
+                        </td>
+                        <td><%= (item.quantity * item.price_at_addition).toLocaleString('vi-VN') %> VNĐ</td>
+                        <td>
+                            <form action="/cart/remove/<%= item.id %>" method="POST" style="display:inline;">
+                                <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?');">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <div class="cart-summary">
+            <h3>Tổng tiền giỏ hàng: <%= total.toLocaleString('vi-VN') %> VNĐ</h3>
+             <a href="/orders/checkout" class="button">Tiến hành thanh toán</a>
+        </div>
+
+    <% } else { %>
+        <p>Giỏ hàng của bạn hiện đang trống.</p>
+         <a href="/products" class="button">Tiếp tục mua sắm</a>
+    <% } %>
+</div>

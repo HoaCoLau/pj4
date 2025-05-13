@@ -1,0 +1,51 @@
+{# views/client/orders/detail.ejs #}
+<div class="container order-detail">
+    <h2>Chi tiết Đơn hàng #<%= order.id %></h2>
+
+    <div class="order-info">
+        <p><strong>Ngày đặt:</strong> <%= new Date(order.order_date).toLocaleString('vi-VN') %></p>
+        <p><strong>Tổng tiền:</strong> <%= order.total_amount.toLocaleString('vi-VN') %> VNĐ</p>
+        <p><strong>Trạng thái:</strong> <%= order.status %></p>
+        <p><strong>Địa chỉ giao hàng:</strong> <%= order.shipping_address %></p>
+        <p><strong>Phương thức thanh toán:</strong> <%= order.payment_method %></p>
+         <% if (order.notes) { %>
+             <p><strong>Ghi chú:</strong> <%= order.notes %></p>
+         <% } %>
+    </div>
+
+    <h3>Sản phẩm trong đơn hàng:</h3>
+    <% if (order.OrderDetails && order.OrderDetails.length > 0) { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Ảnh</th>
+                    <th>Số lượng</th>
+                    <th>Giá tại thời điểm đặt</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% order.OrderDetails.forEach(item => { %>
+                    <tr>
+                        <td><%= item.product_name %></td> {# Hiển thị tên đã lưu khi đặt hàng #}
+                         <td>
+                              <% if (item.Product && item.Product.image_url) { %>
+                                  <img src="<%= item.Product.image_url %>" alt="<%= item.product_name %>" width="50">
+                              <% } else { %>
+                                   Không có ảnh
+                              <% } %>
+                         </td>
+                        <td><%= item.quantity %></td>
+                        <td><%= item.price_at_order.toLocaleString('vi-VN') %> VNĐ</td>
+                        <td><%= (item.quantity * item.price_at_order).toLocaleString('vi-VN') %> VNĐ</td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p>Không có sản phẩm nào trong đơn hàng này.</p>
+    <% } %>
+
+    <p><a href="/orders">Quay lại lịch sử đơn hàng</a></p>
+</div>

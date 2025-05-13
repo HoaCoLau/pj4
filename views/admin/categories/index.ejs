@@ -1,35 +1,38 @@
-<%# layout('admin/layouts/main') %>
+{# views/admin/categories/index.ejs #}
+<div class="container admin-list">
+    <h2><%= title %></h2>
 
-<div class="mb-3">
-    <a href="/admin/categories/form" class="btn btn-primary">Thêm Danh mục mới</a>
-</div>
+    <a href="/admin/categories/create" class="button">Thêm Danh mục mới</a>
 
-<% if (categories && categories.length > 0) { %>
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Tên Danh mục</th>
-            <th>Số Sản phẩm</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% categories.forEach(category => { %>
+     {# Thông báo success/error được hiển thị ở layout #}
+
+    <table>
+        <thead>
             <tr>
-                <td><%= category.id %></td>
-                <td><%= category.name %></td>
-                <td><%= category.productCount %></td>
-                <td>
-                    <a href="/admin/categories/form/<%= category.id %>" class="btn btn-sm btn-warning">Sửa</a>
-                    <form action="/admin/categories/delete/<%= category.id %>" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này? Các sản phẩm thuộc danh mục này sẽ không còn danh mục.');">
-                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                    </form>
-                </td>
+                <th>ID</th>
+                <th>Tên Danh mục</th>
+                <th>Hành động</th>
             </tr>
-        <% }); %>
-    </tbody>
-</table>
-<% } else { %>
-    <p>Chưa có danh mục nào.</p>
-<% } %>
+        </thead>
+        <tbody>
+            <% if (categories && categories.length > 0) { %>
+                 <% categories.forEach(category => { %>
+                     <tr>
+                         <td><%= category.id %></td>
+                         <td><%= category.name %></td>
+                         <td>
+                             <a href="/admin/categories/edit/<%= category.id %>">Sửa</a>
+                             <form action="/admin/categories/delete/<%= category.id %>" method="POST" style="display:inline;">
+                                 <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này? (Sản phẩm thuộc danh mục này sẽ không bị xóa, chỉ mất liên kết danh mục)');">Xóa</button>
+                             </form>
+                         </td>
+                     </tr>
+                 <% }); %>
+             <% } else { %>
+                 <tr>
+                     <td colspan="3">Chưa có danh mục nào.</td>
+                 </tr>
+             <% } %>
+        </tbody>
+    </table>
+</div>
