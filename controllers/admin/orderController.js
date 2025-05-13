@@ -1,94 +1,81 @@
-// controllers/admin/orderController.js
-const { Order, OrderDetail, User, Product } = require('../../models');
+// controllers/public/orderController.js
+const { Order, OrderDetail, Product } = require('../../models');
 const logger = require('../../config/logger');
-const { Op } = require("sequelize"); // Để tìm kiếm (ví dụ)
+const { Op } = require("sequelize");
 
-exports.showOrdersPage = async (req, res, next) => {
-  try {
-    // Ví dụ phân trang cơ bản
-    const page = parseInt(req.query.page) || 1;
-    const limit = 15; // Số lượng order mỗi trang
-    const offset = (page - 1) * limit;
+exports.showUserOrders = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const offset = (page - 1) * limit;
 
-    const { count, rows: orders } = await Order.findAndCountAll({
-        include: [{
-            model: User,
-            as: 'customer',
-            attributes: ['id', 'name', 'email'] // Chỉ lấy thông tin cần thiết của user
-        }],
-        order: [['orderDate', 'DESC']], // Sắp xếp mới nhất trước
-        limit: limit,
-        offset: offset
-    });
+        const { count, rows: orders } = await Order.findAndCountAll({
+            where: { userId: userId },
+            order: [['orderDate', 'DESC']],
+            limit: limit,
+            offset: offset,
+            attributes: ['id', 'orderDate', 'totalAmount', 'status', 'updatedAt']
+        });
 
-    const totalPages = Math.ceil(count / limit);
+        const totalPages = Math.ceil(count / limit);
 
-    res.render('admin/orders/index', {
-        pageTitle: 'Manage Orders',
-        orders: orders,
-        currentPage: page,
-        totalPages: totalPages
-    });
-  } catch (error) {
-    logger.error({ err: error }, 'Error fetching orders for admin view');
-    next(error);
-  }
+        res.render('public/orders/index', {
+            pageTitle: 'Lịch Sử Đơn Hàng',
+            orders: orders.map(o => o.get({ plain: true })),
+            currentPage: page,
+            totalPages: totalPages,
+            path: '/orders'
+        });
+    } catch (error) {
+         logger.error({ err: error, userId: req.user?.id }, 'Error fetching user orders list');
+         next(error);
+    }
 };
 
-exports.showOrderDetailPage = async (req, res, next) => {
+exports.showUserOrderDetail = async (req, res, next) => {
     try {
         const orderId = req.params.id;
-         if (isNaN(parseInt(orderId)) || parseInt(orderId) <= 0) { /* Validate ID */ }
+        const userId = req.user.id;
 
-        const order = await Order.findByPk(orderId, {
+        if (isNaN(parseInt(orderId)) || parseInt(orderId) <= 0) {
+            const error = new Error('Invalid Order ID format.');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        const order = await Order.findOne({
+            where: {
+                id: orderId,
+                userId: userId
+            },
             include: [
-                { model: User, as: 'customer', attributes: ['id', 'name', 'email'] },
                 {
                     model: OrderDetail,
-                    as: 'details', // Alias đã định nghĩa trong model/index.js
+                    as: 'details',
                     include: [{
                         model: Product,
-                        as: 'product', // Alias đã định nghĩa
-                        attributes: ['id', 'name', 'imageUrl'] // Lấy thông tin cần thiết của product
+                        as: 'product',
+                        attributes: ['id', 'name', 'imageUrl']
                     }]
                 }
             ]
         });
 
-        if (!order) { /* Xử lý not found */ }
+        if (!order) {
+            logger.warn(`User ID ${userId} tried to access non-existent or unauthorized order ID ${orderId}.`);
+            const error = new Error('Đơn hàng không tồn tại hoặc bạn không có quyền xem.');
+            error.statusCode = 404;
+            return next(error);
+        }
 
-        res.render('admin/orders/detail', {
-            pageTitle: `Order Details #${order.id}`,
-            order: order.get({ plain: true }) // Chuyển thành object thuần để dễ dùng trong EJS
+        res.render('public/orders/detail', {
+            pageTitle: `Chi Tiết Đơn Hàng #${order.id}`,
+            order: order.get({ plain: true }),
+            path: `/orders/${order.id}`
         });
     } catch (error) {
-        logger.error({ err: error, orderId: req.params.id }, 'Error fetching order detail for admin view');
+        logger.error({ err: error, userId: req.user?.id, orderId: req.params.id }, 'Error fetching user order detail');
         next(error);
-    }
-};
-
-exports.handleUpdateStatus = async (req, res, next) => {
-    const orderId = req.params.id;
-     if (isNaN(parseInt(orderId)) || parseInt(orderId) <= 0) { /* Validate ID */ }
-
-    // Kiểm tra lỗi Joi
-    if (req.validationErrors) {
-        logger.warn(`Order status update validation failed for ID ${orderId}:`, { errors: req.validationErrors });
-        // Redirect về trang chi tiết với thông báo lỗi (qua query param)
-        return res.redirect(`/admin/orders/${orderId}?error=invalid_status`);
-    }
-
-    const { status } = req.validatedBody || req.body;
-
-    try {
-        const order = await Order.findByPk(orderId);
-        if (!order) { /* Xử lý not found */ }
-
-        await order.update({ status });
-        logger.info(`Order status updated by User ID ${req.user?.id}: Order ID ${orderId}, New Status: ${status}`);
-        res.redirect(`/admin/orders/${orderId}?success=true`); // Redirect lại trang chi tiết
-    } catch (error) {
-         logger.error({ err: error, userId: req.user?.id, orderId, newStatus: status }, 'Error updating order status');
-         next(error);
     }
 };

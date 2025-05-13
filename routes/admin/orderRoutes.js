@@ -1,16 +1,13 @@
-// routes/admin/orderRoutes.js
+// routes/public/orderRoutes.js
 const express = require('express');
-const orderController = require('../../controllers/admin/orderController');
-const validate = require('../../middleware/validationMiddleware');
-const { updateOrderStatusSchema } = require('../../validation/orderSchema');
-
 const router = express.Router();
+const orderController = require('../../controllers/public/orderController');
+const { authenticateToken } = require('../../middleware/authMiddleware');
 
-// GET: List orders
-router.get('/', orderController.showOrdersPage);
-// GET: View order detail
-router.get('/:id', orderController.showOrderDetailPage);
-// POST: Update order status
-router.post('/:id/update-status', validate(updateOrderStatusSchema), orderController.handleUpdateStatus);
+router.use(authenticateToken);
+
+router.get('/', orderController.showUserOrders);
+router.get('/:id', orderController.showUserOrderDetail);
+// router.post('/:id/cancel', orderController.handleCancelOrder); // Nếu có
 
 module.exports = router;

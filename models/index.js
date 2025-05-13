@@ -1,6 +1,6 @@
 // models/index.js
 const sequelize = require('../config/db');
-const { Sequelize } = require('sequelize'); // Chỉ import nếu cần DataTypes
+const { Sequelize } = require('sequelize');
 
 // Import các models đã định nghĩa
 const User = require('./User');
@@ -8,76 +8,81 @@ const Category = require('./Category');
 const Product = require('./Product');
 const Order = require('./Order');
 const OrderDetail = require('./OrderDetail');
+const Cart = require('./Cart');           // <--- THÊM MỚI
+const CartDetail = require('./CartDetail'); // <--- THÊM MỚI
 
 // --- Định nghĩa Associations (Mối quan hệ) ---
 
-// User <-> Order (Một User có nhiều Order, một Order thuộc về một User)
-// Foreign Key: user_id trong bảng orders
-User.hasMany(Order, {
-    foreignKey: 'userId',   // Tên FK trong bảng Order
-    as: 'orders',           // Alias khi truy vấn Order từ User (user.getOrders())
-    onDelete: 'SET NULL',   // Nếu User bị xóa, user_id trong Order thành NULL
-    onUpdate: 'CASCADE'
-});
-Order.belongsTo(User, {
+// User <-> Order (Giữ nguyên)
+User.hasMany(Order, { foreignKey: 'userId', as: 'orders', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+Order.belongsTo(User, { foreignKey: 'userId', as: 'customer' });
+
+// Category <-> Product (Giữ nguyên)
+Category.hasMany(Product, { foreignKey: 'categoryId', as: 'products', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+Product.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
+
+// Order <-> OrderDetail (Giữ nguyên)
+Order.hasMany(OrderDetail, { foreignKey: 'orderId', as: 'details', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+OrderDetail.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+
+// Product <-> OrderDetail (Giữ nguyên)
+Product.hasMany(OrderDetail, { foreignKey: 'productId', as: 'orderDetails', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+OrderDetail.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
+
+
+// --- THÊM ASSOCIATIONS CHO CART ---
+// User <-> Cart (Một User có một Cart - do user_id trong carts là UNIQUE)
+// Foreign Key: user_id trong bảng carts
+User.hasOne(Cart, {
     foreignKey: 'userId',
-    as: 'customer'          // Alias khi truy vấn User từ Order (order.getCustomer())
-});
-
-// Category <-> Product (Một Category có nhiều Product, một Product thuộc về một Category)
-// Foreign Key: category_id trong bảng products
-Category.hasMany(Product, {
-    foreignKey: 'categoryId',
-    as: 'products',
-    onDelete: 'SET NULL',   // Nếu Category bị xóa, category_id trong Product thành NULL
+    as: 'cart',
+    onDelete: 'CASCADE', // Nếu User bị xóa, Cart cũng bị xóa
     onUpdate: 'CASCADE'
 });
-Product.belongsTo(Category, {
-    foreignKey: 'categoryId',
-    as: 'category'
+Cart.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
 });
 
-// Order <-> OrderDetail (Một Order có nhiều OrderDetail, một OrderDetail thuộc về một Order)
-// Foreign Key: order_id trong bảng order_details
-Order.hasMany(OrderDetail, {
-    foreignKey: 'orderId',
-    as: 'details',          // Alias: order.getDetails()
-    onDelete: 'CASCADE',    // Nếu Order bị xóa, các OrderDetail liên quan cũng bị xóa
+// Cart <-> CartDetail (Một Cart có nhiều CartDetail)
+// Foreign Key: cart_id trong bảng cart_details
+Cart.hasMany(CartDetail, {
+    foreignKey: 'cartId',
+    as: 'items', // cart.getItems()
+    onDelete: 'CASCADE', // Nếu Cart bị xóa, các CartDetail cũng bị xóa
     onUpdate: 'CASCADE'
 });
-OrderDetail.belongsTo(Order, {
-    foreignKey: 'orderId',
-    as: 'order'
+CartDetail.belongsTo(Cart, {
+    foreignKey: 'cartId',
+    as: 'cart'
 });
 
-// Product <-> OrderDetail (Một Product có trong nhiều OrderDetail, một OrderDetail có một Product)
-// Foreign Key: product_id trong bảng order_details
-Product.hasMany(OrderDetail, {
+// Product <-> CartDetail (Một Product có trong nhiều CartDetail)
+// Foreign Key: product_id trong bảng cart_details
+Product.hasMany(CartDetail, {
     foreignKey: 'productId',
-    as: 'orderDetails',
-    onDelete: 'SET NULL',   // Nếu Product bị xóa, product_id trong OrderDetail thành NULL
+    as: 'cartItems', // product.getCartItems()
+    onDelete: 'CASCADE', // Nếu Product bị xóa, các CartDetail liên quan cũng bị xóa
     onUpdate: 'CASCADE'
 });
-OrderDetail.belongsTo(Product, {
+CartDetail.belongsTo(Product, {
     foreignKey: 'productId',
-    as: 'product'
+    as: 'product' // cartDetail.getProduct()
 });
+// --- KẾT THÚC THÊM ASSOCIATIONS CHO CART ---
 
 
 // --- Exports ---
 const db = {
-  sequelize, // Sequelize instance
-  Sequelize, // Sequelize library
+  sequelize,
+  Sequelize,
   User,
   Category,
   Product,
   Order,
-  OrderDetail
+  OrderDetail,
+  Cart,           // <--- THÊM MỚI
+  CartDetail      // <--- THÊM MỚI
 };
 
-// Đồng bộ hóa (tùy chọn, chỉ dùng khi cần thiết, đặc biệt lúc dev)
-// db.sequelize.sync({ force: false }) // force: true sẽ xóa và tạo lại bảng
-//   .then(() => console.log('Database synchronized'))
-//   .catch(err => console.error('Error synchronizing database:', err));
-
-module.exports = db; // Export object chứa mọi thứ
+module.exports = db;
