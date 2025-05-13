@@ -1,0 +1,89 @@
+<%- include('../../partials/header', { pageTitle: pageTitle, isAdminPage: false }); %>
+<%- include('../../partials/navbar'); %>
+
+<main role="main" class="container-fluid flex-grow-1 py-3">
+<div class="container mt-4">
+    <h1 class="mb-4">Lịch Sử Đơn Hàng Của Tôi</h1>
+
+    <% if (typeof success_msg !== 'undefined' && success_msg) { %>
+        <div class="alert alert-success alert-dismissible fade show alert-auto-dismiss" role="alert">
+            <%= success_msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if (typeof error_msg !== 'undefined' && error_msg) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= error_msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+
+    <% if (typeof orders !== 'undefined' && orders.length > 0) { %>
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Mã ĐH</th>
+                                <th scope="col">Ngày Đặt</th>
+                                <th scope="col" class="text-end">Tổng Tiền</th>
+                                <th scope="col" class="text-center">Trạng Thái</th>
+                                <th scope="col" class="text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% orders.forEach(order => { %>
+                                <tr>
+                                    <td>#<%= order.id %></td>
+                                    <td><%= new Date(order.orderDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></td>
+                                    <td class="text-end"><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount) %></td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill
+                                            <% if (order.status === 'delivered') { %> bg-success
+                                            <% } else if (order.status === 'cancelled' || order.status === 'refunded') { %> bg-danger
+                                            <% } else if (order.status === 'shipped') { %> bg-info text-dark
+                                            <% } else if (order.status === 'processing') { %> bg-primary
+                                            <% } else { %> bg-secondary <% } %>">
+                                            <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="/orders/<%= order.id %>" class="btn btn-sm btn-outline-primary">
+                                            <span data-feather="eye" class="align-text-bottom"></span> Xem
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <% if (totalPages > 1) { %>
+            <nav aria-label="Order navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item <%= currentPage <= 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="/orders?page=<%= currentPage - 1 %>">Trước</a>
+                    </li>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                            <a class="page-link" href="/orders?page=<%= i %>"><%= i %></a>
+                        </li>
+                    <% } %>
+                     <li class="page-item <%= currentPage >= totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="/orders?page=<%= currentPage + 1 %>">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        <% } %>
+
+    <% } else { %>
+        <div class="alert alert-info text-center" role="alert">
+            Bạn chưa có đơn hàng nào. <a href="/products" class="alert-link">Hãy bắt đầu mua sắm!</a>
+        </div>
+    <% } %>
+</div>
+</main>
+<%- include('../../partials/footer'); %>

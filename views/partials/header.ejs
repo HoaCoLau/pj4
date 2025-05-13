@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' | PJ4 Shop' : 'PJ4 Shop' %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Global Styles */
+        body {
+            padding-top: 56px; /* Height of fixed navbar */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f4f6f9; /* Light background for the whole page */
+        }
+        .content-wrapper {
+            flex: 1; /* Allows footer to stick to bottom */
+            display: flex; /* For admin layout with sidebar */
+        }
+
+        /* Admin Layout Specific Styles */
+        .admin-body .content-wrapper {
+            /* Sidebar takes care of margin if present */
+        }
+        .admin-body .main-content {
+            flex-grow: 1; /* Main content takes remaining space */
+            padding: 20px;
+            margin-left: 220px; /* Width of the sidebar */
+            background-color: #ffffff; /* White background for content area */
+        }
+        .sidebar {
+            position: fixed;
+            top: 56px; /* Align below navbar */
+            bottom: 0;
+            left: 0;
+            z-index: 100; /* Keep sidebar on top */
+            padding: 1rem 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            width: 220px;
+            background-color: #f8f9fa; /* Light grey for sidebar */
+            height: calc(100vh - 56px); /* Full height minus navbar */
+            overflow-y: auto; /* Scroll for long sidebars */
+        }
+        .sidebar .nav-link {
+            color: #333;
+            padding: .75rem 1rem;
+            font-weight: 500;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+        }
+        .sidebar .nav-link.active {
+            color: #0d6efd;
+            background-color: #e0eafc; /* Lighter blue for active */
+        }
+        .sidebar .nav-link .feather {
+            margin-right: 8px;
+            vertical-align: text-bottom;
+            width: 18px;
+            height: 18px;
+        }
+
+        /* General UI Enhancements */
+        .invalid-feedback { display: block; } /* Make Joi errors visible */
+        .product-img-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: .25rem; }
+        .product-img-detail { max-width: 100%; height: auto; border-radius: .375rem; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); }
+        .product-grid .card { transition: transform .2s ease-in-out, box-shadow .2s ease-in-out; border: none; }
+        .product-grid .card:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important; }
+        .product-grid .card-img-top { height: 220px; object-fit: cover; border-top-left-radius: .375rem; border-top-right-radius: .375rem; }
+        .table th, .table td { vertical-align: middle; }
+        .table-hover tbody tr:hover { background-color: rgba(0,0,0,.035); }
+        .pagination .page-link { color: #0d6efd; }
+        .pagination .page-item.active .page-link { z-index: 3; color: #fff; background-color: #0d6efd; border-color: #0d6efd; }
+        .footer {
+            font-size: 0.9em;
+            background-color: #e9ecef; /* Slightly darker footer */
+            padding: 1rem 0;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+            width: 100%; /* Ensure footer spans full width */
+        }
+        .btn-primary { background-color: #0d6efd; border-color: #0d6efd; }
+        .btn-outline-primary { color: #0d6efd; border-color: #0d6efd; }
+        .btn-outline-primary:hover { background-color: #0d6efd; color: #fff; }
+        .card { border: 1px solid #e3e6f0; }
+        .card-header { background-color: #f8f9fc; border-bottom: 1px solid #e3e6f0; font-weight: bold; }
+    </style>
+</head>
+<body class="<%= typeof isAdminPage !== 'undefined' && isAdminPage ? 'admin-body' : '' %>">
+    <div class="content-wrapper"> ```
+
+---
+**`views/partials/footer.ejs`**
+```html
+    </div> <footer class="footer mt-auto py-3">
+      <div class="container">
+        <span>© <%= new Date().getFullYear() %> PJ4 Shop - Phát triển bởi Nhóm CoderPro.</span>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script>
+      // Khởi tạo Feather Icons (nếu dùng)
+      if (typeof feather !== 'undefined') {
+          feather.replace();
+      }
+
+      // Hàm xác nhận xóa dùng chung
+      function confirmDelete(event) {
+          if (!confirm('Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.')) {
+              event.preventDefault(); // Ngăn form submit nếu user chọn "Cancel"
+          }
+      }
+
+      // Tự động ẩn alert sau một thời gian (ví dụ: dùng cho thông báo success từ query param)
+      document.addEventListener('DOMContentLoaded', () => {
+        const autoDismissAlerts = document.querySelectorAll('.alert-auto-dismiss');
+        autoDismissAlerts.forEach(alert => {
+            setTimeout(() => {
+                // Kiểm tra xem bootstrap Alert instance đã được khởi tạo chưa
+                const alertInstance = bootstrap.Alert.getInstance(alert);
+                if (alertInstance) {
+                    alertInstance.close();
+                } else {
+                    // Nếu chưa, tự tạo mới và đóng
+                    new bootstrap.Alert(alert).close();
+                }
+            }, 3500); // 3.5 giây
+        });
+      });
+    </script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

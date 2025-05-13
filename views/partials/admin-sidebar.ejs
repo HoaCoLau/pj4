@@ -1,0 +1,43 @@
+<% if (typeof isAdminPage !== 'undefined' && isAdminPage && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin') { %>
+<nav id="sidebarMenu" class="d-none d-md-block sidebar collapse"> <div class="position-sticky">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link <%= locals.path === '/admin/dashboard' ? 'active' : '' %>" href="/admin/dashboard">
+                    <span data-feather="home"></span> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <%= locals.path && locals.path.startsWith('/admin/categories') ? 'active' : '' %>" href="/admin/categories">
+                    <span data-feather="list"></span> Categories
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <%= locals.path && locals.path.startsWith('/admin/products') ? 'active' : '' %>" href="/admin/products">
+                    <span data-feather="package"></span> Products
+                </a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link <%= locals.path && locals.path.startsWith('/admin/orders') ? 'active' : '' %>" href="/admin/orders">
+                    <span data-feather="file-text"></span> Orders
+                </a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link <%= locals.path && locals.path.startsWith('/admin/users') ? 'active' : '' %>" href="/admin/users">
+                    <span data-feather="users"></span> Users
+                </a>
+            </li>
+            <li class="nav-item mt-auto border-top pt-3"> <a class="nav-link" href="/">
+                     <span data-feather="arrow-left-circle"></span> Back to Shop
+                 </a>
+             </li>
+              <li class="nav-item">
+                 <a class="nav-link text-danger" href="/auth/logout">
+                     <span data-feather="log-out"></span> Logout
+                 </a>
+             </li>
+        </ul>
+    </div>
+</nav>
+<main class="main-content">
+<% } else { %>
+    <main role="main" class="container-fluid flex-grow-1 py-3"> <% } %>

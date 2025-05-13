@@ -1,0 +1,74 @@
+<%- include('../../partials/header', { pageTitle: pageTitle, isAdminPage: true }); %>
+<%- include('../../partials/navbar'); %>
+<%- include('../../partials/admin-sidebar'); %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Edit User: <%= userData.name %> <small class="text-muted">(ID: <%= userData.id %>)</small></h1>
+     <div class="btn-toolbar mb-2 mb-md-0">
+         <a href="/admin/users" class="btn btn-sm btn-outline-secondary">
+             <span data-feather="arrow-left" class="align-text-bottom me-1"></span> Back to User List
+         </a>
+     </div>
+</div>
+
+<% if (typeof errors !== 'undefined' && errors && Object.keys(errors).length > 0) { %>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>Please fix the following errors:</strong>
+    <ul>
+        <% Object.entries(errors).forEach(([key, errorMessage]) => { %>
+            <li><%= errorMessage %></li>
+        <% }) %>
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+         <h6 class="m-0 font-weight-bold text-primary">User Details & Role Management</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="/admin/users/edit/<%= userData.id %>" novalidate>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                    <input type="text"
+                           class="form-control <%= (errors && errors.name) ? 'is-invalid' : '' %>"
+                           id="name" name="name" value="<%= userData.name %>" required>
+                    <% if (errors && errors.name) { %><div class="invalid-feedback"><%= errors.name %></div><% } %>
+                </div>
+                 <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                    <input type="email"
+                           class="form-control <%= (errors && errors.email) ? 'is-invalid' : '' %>"
+                           id="email" name="email" value="<%= userData.email %>" required>
+                    <% if (errors && errors.email) { %><div class="invalid-feedback"><%= errors.email %></div><% } %>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                <select class="form-select <%= (errors && errors.role) ? 'is-invalid' : '' %>" id="role" name="role" required
+                    <% if (currentUser.id === userData.id) { %> disabled title="Admin cannot change their own role." <% } %> >
+                    <option value="user" <%= userData.role === 'user' ? 'selected' : '' %>>User</option>
+                    <option value="admin" <%= userData.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                </select>
+                <% if (errors && errors.role) { %><div class="invalid-feedback"><%= errors.role %></div><% } %>
+                <% if (currentUser.id === userData.id) { %>
+                    <div class="form-text text-warning">You cannot change your own role.</div>
+                <% } %>
+            </div>
+
+            <p class="text-muted small">Password cannot be changed from this panel. Users should use the "Forgot Password" feature if available, or password changes can be handled via direct database intervention by super-admin if necessary.</p>
+
+            <hr>
+            <button type="submit" class="btn btn-primary" <% if (currentUser.id === userData.id && userData.role === 'admin') { %> title="If changing role, ensure another admin exists or you might lock yourself out." <% } %>>
+                 <span data-feather="save" class="align-text-bottom me-1"></span> Update User
+            </button>
+            <a href="/admin/users" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+</main>
+<%- include('../../partials/footer'); %>

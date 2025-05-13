@@ -1,0 +1,157 @@
+<%- include('../../partials/header', { pageTitle: pageTitle, isAdminPage: true }); %>
+<%- include('../../partials/navbar'); %>
+<%- include('../../partials/admin-sidebar'); %>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Manage Products</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/admin/products/add" class="btn btn-sm btn-primary shadow-sm">
+             <span data-feather="plus-circle" class="align-text-bottom me-1"></span> Add New Product
+        </a>
+    </div>
+</div>
+
+<% if (locals.success_msg || (typeof success !== 'undefined' && success === 'true')) { %>
+    <div class="alert alert-success alert-dismissible fade show alert-auto-dismiss" role="alert">Operation successful!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+<% } %>
+<% if (locals.error_msg || (typeof error !== 'undefined' && error)) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        An error occurred:
+        <% if (error === 'constraint_product') { %> Cannot delete product as it's associated with orders/carts. <% } %>
+        <% else if (error === 'notfound') { %> Product not found. <% } %>
+        <% else { %> Please try again. <% } %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form method="GET" action="/admin/products" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <label for="search" class="visually-hidden">Search</label>
+                <input type="text" class="form-control form-control-sm" id="search" name="search" placeholder="Search by product name..." value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
+            </div>
+            <div class="col-md-5">
+                <label for="category" class="visually-hidden">Category</label>
+                <select class="form-select form-select-sm" id="category" name="category">
+                    <option value="">All Categories</option>
+                    <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
+                        <% categories.forEach(cat => { %>
+                            <option value="<%= cat.id %>" <%= (typeof selectedCategory !== 'undefined' && selectedCategory == cat.id) ? 'selected' : '' %>>
+                                <%= cat.name %>
+                            </option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-info btn-sm">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">All Products</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTableProducts" width="100%" cellspacing="0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (typeof products !== 'undefined' && products.length > 0) { %>
+                        <% products.forEach((product, index) => { %>
+                            <tr>
+                                <td><%= (currentPage - 1) * 10 + index + 1 %></td>
+                                <td>
+                                    <% if (product.imageUrl) { %>
+                                        <img src="<%= product.imageUrl %>" alt="<%= product.name %>" class="product-img-thumb img-thumbnail">
+                                    <% } else { %>
+                                        <img src="/images/placeholder.png" alt="Placeholder" class="product-img-thumb img-thumbnail">
+                                    <% } %>
+                                </td>
+                                <td><%= product.name %></td>
+                                <td><%= product.category ? product.category.name : 'N/A' %></td>
+                                <td><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price) %></td>
+                                <td><%= product.stockQuantity %></td>
+                                <td class="text-center">
+                                    <a href="/admin/products/edit/<%= product.id %>" class="btn btn-sm btn-warning me-1" title="Edit">
+                                        <span data-feather="edit-2"></span>
+                                    </a>
+                                    <form action="/admin/products/delete/<%= product.id %>" method="POST" style="display: inline;" onsubmit="return confirmDelete(event);">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                            <span data-feather="trash-2"></span>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center">No products found. <a href="/admin/products/add">Add one?</a></td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+     <% if (totalPages > 1) { %>
+    <div class="card-footer">
+        <nav aria-label="Product navigation">
+            <ul class="pagination justify-content-center mb-0">
+                <% if (currentPage > 1) { %>
+                    <li class="page-item"><a class="page-link" href="/admin/products?page=<%= currentPage - 1 %><%= selectedCategory ? '&category=' + selectedCategory : '' %><%= searchQuery ? '&search=' + searchQuery : '' %>">Previous</a></li>
+                <% } else { %>
+                     <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                <% } %>
+
+                <%
+                const maxPagesToShow = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+                let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+                if (endPage - startPage + 1 < maxPagesToShow) {
+                    startPage = Math.max(1, endPage - maxPagesToShow + 1);
+                }
+                %>
+
+                <% if (startPage > 1) { %>
+                    <li class="page-item"><a class="page-link" href="/admin/products?page=1<%= selectedCategory ? '&category=' + selectedCategory : '' %><%= searchQuery ? '&search=' + searchQuery : '' %>">1</a></li>
+                    <% if (startPage > 2) { %><li class="page-item disabled"><span class="page-link">...</span></li><% } %>
+                <% } %>
+
+                <% for (let i = startPage; i <= endPage; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="/admin/products?page=<%= i %><%= selectedCategory ? '&category=' + selectedCategory : '' %><%= searchQuery ? '&search=' + searchQuery : '' %>"><%= i %></a>
+                    </li>
+                <% } %>
+
+                 <% if (endPage < totalPages) { %>
+                    <% if (endPage < totalPages - 1) { %><li class="page-item disabled"><span class="page-link">...</span></li><% } %>
+                    <li class="page-item"><a class="page-link" href="/admin/products?page=<%= totalPages %><%= selectedCategory ? '&category=' + selectedCategory : '' %><%= searchQuery ? '&search=' + searchQuery : '' %>"><%= totalPages %></a></li>
+                <% } %>
+
+                <% if (currentPage < totalPages) { %>
+                    <li class="page-item"><a class="page-link" href="/admin/products?page=<%= currentPage + 1 %><%= selectedCategory ? '&category=' + selectedCategory : '' %><%= searchQuery ? '&search=' + searchQuery : '' %>">Next</a></li>
+                <% } else { %>
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                <% } %>
+            </ul>
+        </nav>
+    </div>
+    <% } %>
+</div>
+
+</main>
+<%- include('../../partials/footer'); %>

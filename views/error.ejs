@@ -1,0 +1,33 @@
+<%- include('./partials/header', { pageTitle: pageTitle || 'Error Occurred', isAdminPage: typeof isAdminPage !== 'undefined' ? isAdminPage : false }); %>
+
+<%# Navbar và Sidebar sẽ được include động dựa trên isAdminPage và ngữ cảnh %>
+<% if (typeof isAdminPage !== 'undefined' && isAdminPage) { %>
+    <%- include('./partials/navbar'); %>
+    <%- include('./partials/admin-sidebar'); %>
+<% } else { %>
+    <%- include('./partials/navbar'); %>
+<% } %>
+
+<div class="container mt-5 pt-5 text-center">
+    <div class="py-5">
+        <h1 class="display-1 text-danger">
+            <span data-feather="<%= (typeof errorCode !== 'undefined' && errorCode === 404) ? 'alert-triangle' : 'alert-octagon' %>" style="width: 60px; height: 60px;" class="me-2"></span>
+            <%= typeof errorCode !== 'undefined' ? errorCode : 'Lỗi!' %>
+        </h1>
+        <h2 class="mb-4"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Đã có lỗi xảy ra' %></h2>
+        <p class="lead mb-4"><%= typeof errorMessage !== 'undefined' ? errorMessage : 'Đã có sự cố ngoài ý muốn. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.' %></p>
+
+        <% if (process.env.NODE_ENV !== 'production' && typeof errStack !== 'undefined' && errStack) { %>
+            <div class="text-start mt-4 p-3 bg-light border rounded shadow-sm" style="max-height: 300px; overflow-y: auto;">
+                <h5 class="text-danger">Thông tin cho Developer (Stack Trace):</h5>
+                <pre style="white-space: pre-wrap; word-wrap: break-word; font-size: 0.8em;"><%= errStack %></pre>
+            </div>
+        <% } %>
+
+        <a href="<%= typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin' && locals.path && locals.path.startsWith('/admin') ? '/admin/dashboard' : '/' %>" class="btn btn-primary btn-lg mt-4">
+             <span data-feather="home" class="align-text-bottom me-1"></span> Về Trang Chủ
+        </a>
+    </div>
+</div>
+
+</main> <%- include('./partials/footer'); %>

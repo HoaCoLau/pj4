@@ -1,0 +1,46 @@
+</div> <footer class="footer mt-auto py-3 text-muted border-top text-center">
+      <div class="container">
+        <span>© <%= new Date().getFullYear() %> PJ4 Shop - Phát triển bởi Nhóm CoderPro.</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script>
+      // Khởi tạo Feather Icons sau khi DOM đã tải
+      document.addEventListener('DOMContentLoaded', function() {
+        if (typeof feather !== 'undefined') {
+            feather.replace(); // Kích hoạt Feather Icons
+        }
+      });
+
+      // Hàm xác nhận xóa dùng chung cho các form delete
+      function confirmDelete(event) {
+          if (!confirm('Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.')) {
+              event.preventDefault(); // Ngăn form submit nếu user chọn "Cancel"
+          }
+      }
+
+      // Tự động ẩn các alert thông báo sau một khoảng thời gian
+      document.addEventListener('DOMContentLoaded', () => {
+        const autoDismissAlerts = document.querySelectorAll('.alert-auto-dismiss');
+        autoDismissAlerts.forEach(alert => {
+            setTimeout(() => {
+                // Kiểm tra xem bootstrap Alert instance đã được khởi tạo chưa
+                const alertInstance = bootstrap.Alert.getInstance(alert);
+                if (alertInstance) {
+                    alertInstance.close();
+                } else if (alert.classList.contains('show')) { // Kiểm tra nếu alert vẫn hiển thị
+                    // Nếu chưa, tự tạo mới và đóng (cho trường hợp không có JS tương tác khác)
+                    new bootstrap.Alert(alert); // Khởi tạo để có thể close
+                    alert.classList.remove('show'); // Ẩn thủ công nếu cần
+                }
+            }, 3500); // Thời gian hiển thị là 3.5 giây
+        });
+      });
+    </script>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

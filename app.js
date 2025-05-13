@@ -9,12 +9,11 @@ const logger = require('./config/logger');
 const sequelize = require('./config/db');
 
 // Import Routes (sẽ tạo sau) - Tạm thời comment hoặc để trống
-// const authRoutes = require('./routes/authRoutes');
-// const adminRoutes = require('./routes/admin');
-// const publicProductRoutes = require('./routes/public/productRoutes');
-// const publicOrderRoutes = require('./routes/public/orderRoutes');
-// const homeRoute = require('./routes/index');
-
+const authRoutes = require('./routes/authRoutes');
+const adminMainRoutes = require('./routes/admin'); // Import file routes/admin/index.js
+const publicProductRoutes = require('./routes/public/productRoutes');
+const publicOrderRoutes = require('./routes/public/orderRoutes');
+const homeRoute = require('./routes/index'); // Import file routes/index.js
 // --- Express App Initialization ---
 const app = express();
 
@@ -49,13 +48,13 @@ app.use((req, res, next) => {
 
 
 
-app.get('/', (req, res) => res.render('home', { pageTitle: 'Home' })); 
-// app.use('/', homeRoute);
-// app.use('/auth', authRoutes);
-// app.use('/products', publicProductRoutes);
-// app.use('/orders', publicOrderRoutes); // Cần auth
-// app.use('/admin', /* require auth/admin middleware here */ adminRoutes);
+app.use('/', homeRoute); // Route cho trang chủ '/'
+app.use('/auth', authRoutes);
+app.use('/products', publicProductRoutes); // Gắn route sản phẩm công khai vào /products
+app.use('/orders', publicOrderRoutes);    // Gắn route đơn hàng công khai vào /orders
 
+// Gắn TOÀN BỘ các route admin (đã được bảo vệ) vào prefix /admin
+app.use('/admin', adminMainRoutes);
 // --- Error Handling ---
 // 404 Not Found Handler
 app.use((req, res, next) => {

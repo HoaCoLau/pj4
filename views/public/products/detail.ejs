@@ -1,0 +1,84 @@
+<%- include('../../partials/header', { pageTitle: pageTitle, isAdminPage: false }); %>
+<%- include('../../partials/navbar'); %>
+
+<main role="main" class="container-fluid flex-grow-1 py-3">
+<div class="container mt-4">
+    <% if (typeof product !== 'undefined' && product) { %>
+        <nav aria-label="breadcrumb" style="--bs-breadcrumb-divider: '>';">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/products">Sản phẩm</a></li>
+            <% if (product.category) { %>
+                 <li class="breadcrumb-item"><a href="/products?category=<%= encodeURIComponent(product.category.name) %>"><%= product.category.name %></a></li>
+            <% } %>
+            <li class="breadcrumb-item active" aria-current="page"><%= product.name %></li>
+          </ol>
+        </nav>
+
+        <div class="row g-5">
+            <div class="col-md-6 mb-3">
+                <img src="<%= product.imageUrl || '/images/placeholder.png' %>" alt="<%= product.name %>" class="img-fluid product-img-detail shadow-sm">
+            </div>
+            <div class="col-md-6">
+                <h1 class="display-6"><%= product.name %></h1>
+                <% if (product.category) { %>
+                    <p class="text-muted fs-5">Danh mục: <a href="/products?category=<%= encodeURIComponent(product.category.name) %>" class="text-decoration-none"><%= product.category.name %></a></p>
+                <% } %>
+                <h2 class="text-primary fw-bold mb-3"><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price) %></h2>
+
+                <div class="mb-3">
+                    <strong>Tình trạng:</strong>
+                    <% if (product.stockQuantity > 0) { %>
+                        <span class="badge bg-success fs-6">Còn hàng (<%= product.stockQuantity %> sản phẩm)</span>
+                    <% } else { %>
+                        <span class="badge bg-danger fs-6">Hết hàng</span>
+                    <% } %>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="fw-normal">Mô tả sản phẩm:</h5>
+                    <p class="text-secondary"><%= product.description || 'Chưa có mô tả cho sản phẩm này.' %></p>
+                </div>
+
+                <form action="/cart/add" method="POST" class="d-flex align-items-center">
+                    <input type="hidden" name="productId" value="<%= product.id %>">
+                    <div class="me-2" style="width: 100px;">
+                        <label for="quantity" class="form-label small">Số lượng:</label>
+                        <input type="number" name="quantity" value="1" min="1" max="<%= product.stockQuantity > 0 ? product.stockQuantity : 1 %>" class="form-control form-control-sm text-center" <%= product.stockQuantity <= 0 ? 'disabled' : '' %>>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg flex-grow-1" <%= product.stockQuantity <= 0 ? 'disabled' : '' %>>
+                        <span data-feather="shopping-cart" class="align-text-bottom me-1"></span> Thêm vào giỏ
+                    </button>
+                </form>
+                 <% if (product.stockQuantity <= 0) { %>
+                    <small class="text-danger d-block mt-2">Sản phẩm này hiện đã hết hàng.</small>
+                 <% } %>
+            </div>
+        </div>
+
+        <% if (typeof relatedProducts !== 'undefined' && relatedProducts.length > 0) { %>
+            <hr class="my-5">
+            <h3 class="mb-4 text-center">Sản Phẩm Tương Tự</h3>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4 product-grid">
+                <% relatedProducts.forEach(related => { %>
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <a href="/products/<%= related.id %>">
+                                <img src="<%= related.imageUrl || '/images/placeholder.png' %>" class="card-img-top" alt="<%= related.name %>">
+                            </a>
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title fs-6">
+                                    <a href="/products/<%= related.id %>" class="text-decoration-none text-dark stretched-link"><%= related.name %></a>
+                                </h6>
+                                <p class="card-text fw-bold mt-auto mb-1"><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(related.price) %></p>
+                            </div>
+                             <div class="card-footer bg-transparent border-top-0 p-3">
+                                 <a href="/products/<%= related.id %>" class="btn btn-sm btn-outline-primary w-100">Xem Chi Tiết</a>
+                             </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+
+    <% } else { %>
