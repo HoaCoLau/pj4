@@ -1,0 +1,30 @@
+<%- include('../partials/header', { title: title }) %>
+
+<div class="container">
+    <section class="hero">
+        <h1>Chào mừng đến với Cửa hàng Nội thất!</h1>
+        <p>Khám phá những sản phẩm nội thất chất lượng cao với thiết kế độc đáo.</p>
+        <a href="/products" class="btn btn-primary">Xem tất cả sản phẩm</a>
+    </section>
+
+    <section class="featured-products">
+        <h2>Sản phẩm nổi bật</h2>
+        <% if (typeof featuredProducts !== 'undefined' && featuredProducts.length > 0) { %>
+            <div class="product-grid">
+                <% featuredProducts.forEach(product => { %>
+                    <div class="product-card">
+                        <a href="/products/<%= product.id %>">
+                            <img src="<%= product.image_url ? product.image_url : '/images/placeholder.png' %>" alt="<%= product.name %>">
+                            <h3><%= product.name %></h3>
+                            <p class="price"><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price) %></p>
+                        </a>
+                        </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <p>Hiện chưa có sản phẩm nào nổi bật.</p>
+        <% } %>
+    </section>
+</div>
+
+<%- include('../partials/footer') %>

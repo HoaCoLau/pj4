@@ -1,84 +1,58 @@
-<%- include('../partials/header', { pageTitle: pageTitle, isAdminPage: true }); %>
-<%- include('../partials/navbar'); %>
-<%- include('../partials/admin-sidebar'); %>
-
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Admin Dashboard</h1>
-    </div>
-
-<div class="row">
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
+<%# layout('admin/layouts/main') %> <div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Total Products</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= typeof productCount !== 'undefined' ? productCount : 'N/A' %></div>
-                    </div>
-                    <div class="col-auto">
-                        <span data-feather="package" class="text-gray-300" style="width:32px; height:32px;"></span>
-                    </div>
-                </div>
+                <h5 class="card-title">Tổng Sản phẩm</h5>
+                <p class="card-text fs-4"><%= locals.stats && stats.totalProducts !== undefined ? stats.totalProducts : 'N/A' %></p>
             </div>
         </div>
     </div>
-
-     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Total Orders</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= typeof orderCount !== 'undefined' ? orderCount : 'N/A' %></div>
-                    </div>
-                    <div class="col-auto">
-                         <span data-feather="file-text" class="text-gray-300" style="width:32px; height:32px;"></span>
-                    </div>
-                </div>
+                <h5 class="card-title">Tổng Đơn hàng</h5>
+                <p class="card-text fs-4"><%= locals.stats && stats.totalOrders !== undefined ? stats.totalOrders : 'N/A' %></p>
             </div>
         </div>
     </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Users
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= typeof userCount !== 'undefined' ? userCount : 'N/A' %></div>
-                    </div>
-                    <div class="col-auto">
-                        <span data-feather="users" class="text-gray-300" style="width:32px; height:32px;"></span>
-                    </div>
-                </div>
+                <h5 class="card-title">Tổng User (khách)</h5>
+                <p class="card-text fs-4"><%= locals.stats && stats.totalUsers !== undefined ? stats.totalUsers : 'N/A' %></p>
             </div>
         </div>
     </div>
-     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-warning">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Pending Orders</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= typeof pendingOrderCount !== 'undefined' ? pendingOrderCount : 'N/A' %></div>
-                    </div>
-                    <div class="col-auto">
-                        <span data-feather="alert-circle" class="text-gray-300" style="width:32px; height:32px;"></span>
-                    </div>
-                </div>
+                <h5 class="card-title">Đơn hàng Chờ xử lý</h5>
+                <p class="card-text fs-4"><%= locals.stats && stats.pendingOrders !== undefined ? stats.pendingOrders : 'N/A' %></p>
+            </div>
+        </div>
+    </div>
+     <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Tổng Danh mục</h5>
+                <p class="card-text fs-4"><%= locals.stats && stats.totalCategories !== undefined ? stats.totalCategories : 'N/A' %></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Doanh thu (Đã giao)</h5>
+                <p class="card-text fs-4"><%= locals.stats && stats.totalRevenue !== undefined ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(stats.totalRevenue) : 'N/A' %></p>
+            </div>
+        </div>
+    </div>
+     <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Đơn hàng mới (7 ngày)</h5>
+                <p class="card-text fs-4"><%= locals.stats && stats.recentOrdersCount !== undefined ? stats.recentOrdersCount : 'N/A' %></p>
             </div>
         </div>
     </div>
 </div>
-
-<div class="mt-4">
-    <h4>Recent Activity (Placeholder)</h4>
-    <p>Activity feed or recent orders could be displayed here.</p>
-</div>
-
-
-</main> <%- include('../partials/footer'); %>

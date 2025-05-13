@@ -3,89 +3,122 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const methodOverride = require('method-override');
-const pinoHttp = require('pino-http');
-const logger = require('./config/logger');
-const sequelize = require('./config/db');
+const session = require('express-session'); // Cần cho connect-flash
+const flash = require('connect-flash');   // Để hiển thị thông báo
+const logger = require('./config/logger.config');
+const authMiddleware = require('./middleware/auth.middleware');
+const db = require('./models'); // Import Sequelize db setup từ models/index.js
 
-// Import Routes (sẽ tạo sau) - Tạm thời comment hoặc để trống
-const authRoutes = require('./routes/authRoutes');
-const adminMainRoutes = require('./routes/admin'); // Import file routes/admin/index.js
-const publicProductRoutes = require('./routes/public/productRoutes');
-const publicOrderRoutes = require('./routes/public/orderRoutes');
-const homeRoute = require('./routes/index'); // Import file routes/index.js
-// --- Express App Initialization ---
 const app = express();
 
-// --- Core Middleware ---
-// Logger (Pino HTTP)
-app.use(pinoHttp({ logger }));
+// Session middleware (phải có TRƯỚC flash và các route dùng session)
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'a_very_strong_and_long_secret_key_for_session',
+    resave: false,
+    saveUninitialized: true, // true để connect-flash hoạt động đúng khi chưa có session
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // Chỉ gửi cookie qua HTTPS ở production
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // Ví dụ: 1 ngày
+    }
+}));
 
-// Cookie Parser
-app.use(cookieParser());
+// Flash messages middleware
+app.use(flash());
 
-// Static Files
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
-// Body Parsers
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-// Method Override
-app.use(methodOverride('_method'));
-
-// --- View Engine Setup ---
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-
+// Middleware để truyền flash messages và user cho tất cả views
+// Phải đặt SAU session và flash, TRƯỚC authMiddleware.verifyTokenAndAttachUser nếu muốn nó ghi đè
+// hoặc đặt SAU authMiddleware.verifyTokenAndAttachUser để nó có thể dùng req.user
 app.use((req, res, next) => {
-    res.locals.currentUser = null;
-    res.locals.path = req.path; // Vẫn cần path cho active menu
+    // Các biến này sẽ có sẵn trong tất cả các template EJS
+    res.locals.success_msg = req.flash('success_msg');
+    res.locals.error_msg = req.flash('error_msg');
+    // Có thể bạn cũng muốn truyền các loại flash khác nếu dùng (vd: 'info_msg')
+    // currentUser và isLoggedIn sẽ được set bởi verifyTokenAndAttachUser
     next();
 });
 
 
+// Middleware cơ bản
+app.use(express.json()); // Parse JSON request bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
+app.use(cookieParser()); // Parse cookies
 
-app.use('/', homeRoute); // Route cho trang chủ '/'
-app.use('/auth', authRoutes);
-app.use('/products', publicProductRoutes); // Gắn route sản phẩm công khai vào /products
-app.use('/orders', publicOrderRoutes);    // Gắn route đơn hàng công khai vào /orders
+// View Engine Setup
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-// Gắn TOÀN BỘ các route admin (đã được bảo vệ) vào prefix /admin
-app.use('/admin', adminMainRoutes);
-// --- Error Handling ---
-// 404 Not Found Handler
+// Static Files (CSS, JS client-side, images)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Request Logger (đơn giản)
 app.use((req, res, next) => {
-    const error = new Error('Page Not Found');
-    error.statusCode = 404;
-    next(error);
+  logger.info(`${req.method} ${req.url} - IP: ${req.ip}`);
+  next();
 });
 
-// Global Error Handler
+// Middleware xác thực token và gắn user vào request (CHẠY CHO MỌI REQUEST)
+app.use(authMiddleware.verifyTokenAndAttachUser);
+
+// --- Routes ---
+const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const adminRoutes = require('./routes/admin.routes');
+// const cartRoutes = require('./routes/cart.routes'); // Sẽ tạo sau
+// const orderRoutes = require('./routes/order.routes'); // Sẽ tạo sau
+
+app.use('/auth', authRoutes);
+app.use('/admin', authMiddleware.isLoggedIn, authMiddleware.isAdmin, adminRoutes); // Admin routes được bảo vệ
+// app.use('/cart', isLoggedIn, cartRoutes); // Cart routes cần đăng nhập
+// app.use('/orders', isLoggedIn, orderRoutes); // Order routes cần đăng nhập
+app.use('/', userRoutes); // User routes (công khai và cần đăng nhập sẽ xử lý bên trong)
+
+
+// --- Đồng bộ Database với Sequelize (CHỈ NÊN DÙNG CHO DEVELOPMENT) ---
+if (process.env.NODE_ENV === 'development') {
+    db.syncDb({ alter: true }) // { alter: true } cố gắng cập nhật bảng, { force: true } xóa và tạo lại
+        .then(() => {
+            logger.info("Development: Sequelize DB Sync completed (alter:true).");
+            // (Tùy chọn) Seed data ở đây nếu database rỗng hoặc mới được tạo
+        })
+        .catch(err => {
+            logger.error("Development: Sequelize DB Sync error:", err);
+            // Có thể dừng server ở đây nếu DB sync thất bại và là điều kiện tiên quyết
+            // process.exit(1);
+        });
+}
+// --------------------------------------------------------------------
+
+// 404 Error Handler (phải là middleware cuối cùng trước error handler chung)
+app.use((req, res, next) => {
+  res.status(404).render('user/error', { // Giả sử có view lỗi chung
+      layout: 'user/layouts/main', // Nếu dùng layout
+      title: '404 - Không tìm thấy trang',
+      message: 'Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.'
+  });
+});
+
+// General Error Handler (phải có 4 tham số: err, req, res, next)
 app.use((err, req, res, next) => {
-  req.log.error({ err }, 'Unhandled error occurred'); // Log lỗi bằng logger của pino-http
+  logger.error({
+      message: err.message,
+      name: err.name,
+      status: err.status || 500,
+      stack: err.stack,
+      url: req.originalUrl,
+      method: req.method
+  }, 'Unhandled application error');
 
-  const statusCode = err.statusCode || 500;
-  res.status(statusCode).render('error', {
-    pageTitle: statusCode === 404 ? 'Not Found' : 'Error',
-    errorCode: statusCode,
-    errorMessage: process.env.NODE_ENV === 'production' && statusCode !== 404 ? 'An unexpected error occurred.' : err.message
+  const status = err.status || 500;
+  const message = err.message || 'Đã có lỗi xảy ra trên máy chủ.';
+
+  res.status(status).render('user/error', { // View lỗi chung
+    layout: 'user/layouts/main', // Nếu dùng layout
+    title: `Lỗi ${status}`,
+    message: (process.env.NODE_ENV === 'development' || status < 500) ? message : 'Đã có lỗi xảy ra, vui lòng thử lại sau.',
+    // Chỉ hiển thị stack trace chi tiết ở development cho lỗi 500
+    errorDetail: process.env.NODE_ENV === 'development' ? err.stack : null
   });
 });
 
-// --- Server & DB Connection ---
-const PORT = process.env.PORT || 3000;
-
-sequelize.authenticate()
-  .then(() => {
-    logger.info('Database connection established successfully.');
-    app.listen(PORT, () => {
-      logger.info(`Server running in ${process.env.NODE_ENV} mode on http://localhost:${PORT}`);
-    });
-  })
-  .catch(err => {
-    logger.fatal({ err }, 'Unable to connect to the database or start server.');
-    process.exit(1);
-  });
+module.exports = app;   

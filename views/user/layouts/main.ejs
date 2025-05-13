@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title + ' | Cửa Hàng Nội Thất' : 'Cửa Hàng Nội Thất' %></title>
+    <link rel="stylesheet" href="/css/style.css"> </head>
+<body>
+    <%- include('../partials/header') %>
+
+    <div class="container mt-4 mb-4"> <% if (locals.success_msg && success_msg.length > 0) { %>
+            <div class="alert alert-success" role="alert">
+                <%= success_msg %>
+            </div>
+        <% } %>
+        <% if (locals.error_msg && error_msg.length > 0) { %>
+            <div class="alert alert-danger" role="alert">
+                <%= error_msg %>
+            </div>
+        <% } %>
+        <% if (locals.message && message.length > 0 && !locals.success_msg) { %> <div class="alert alert-info" role="alert">
+                <%= message %>
+            </div>
+        <% } %>
+         <% if (locals.error && error.length > 0 && !locals.error_msg) { %> <div class="alert alert-warning" role="alert">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <%- body %>
+    </div>
+
+    <%- include('../partials/footer') %>
+
+    <script src="/js/main.js"></script> </body>
+</html>

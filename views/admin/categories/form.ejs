@@ -1,57 +1,18 @@
-<%- include('../../partials/header', { pageTitle: pageTitle, isAdminPage: true }); %>
-<%- include('../../partials/navbar'); %>
-<%- include('../../partials/admin-sidebar'); %>
+<%# layout('admin/layouts/main') %>
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><%= editing ? 'Edit Category' : 'Add New Category' %></h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-         <a href="/admin/categories" class="btn btn-sm btn-outline-secondary">
-             <span data-feather="arrow-left" class="align-text-bottom me-1"></span> Back to List
-         </a>
-     </div>
-</div>
-
-<% if (typeof errors !== 'undefined' && errors && Object.keys(errors).length > 0) { %>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Please fix the following errors:</strong>
-        <ul>
-            <% Object.entries(errors).forEach(([key, errorMessage]) => { %>
-                <li><%= errorMessage %></li>
-            <% }) %>
-        </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<form method="POST" action="/admin/categories/save/<%= typeof categoryData !== 'undefined' && categoryData.id ? categoryData.id : '' %>">
+    <div class="mb-3">
+        <label for="name" class="form-label">Tên Danh mục</label>
+        <input type="text" class="form-control <%= (locals.errors && errors.name) ? 'is-invalid' : '' %>" id="name" name="name" value="<%= typeof categoryData !== 'undefined' && categoryData.name ? categoryData.name : '' %>" required>
+        <% if (locals.errors && errors.name) { %>
+            <div class="invalid-feedback"><%= errors.name %></div>
+        <% } %>
     </div>
-<% } %>
 
+    <% if (locals.errors && errors.general) { %>
+        <div class="alert alert-danger"><%= errors.general %></div>
+    <% } %>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary"><%= editing ? 'Update Category Details' : 'Enter Category Details' %></h6>
-    </div>
-    <div class="card-body">
-        <form method="POST" action="<%= editing ? '/admin/categories/edit/' + category.id : '/admin/categories/add' %>" novalidate>
-            <div class="mb-3">
-                <label for="name" class="form-label">Category Name <span class="text-danger">*</span></label>
-                <input type="text"
-                       class="form-control <%= (typeof errors !== 'undefined' && errors && errors.name) ? 'is-invalid' : '' %>"
-                       id="name"
-                       name="name"
-                       value="<%= typeof category !== 'undefined' ? category.name : '' %>"
-                       required>
-                <% if (typeof errors !== 'undefined' && errors && errors.name) { %>
-                     <div class="invalid-feedback"><%= errors.name %></div>
-                 <% } %>
-            </div>
-
-            <hr>
-            <button type="submit" class="btn btn-primary">
-                <span data-feather="<%= editing ? 'save' : 'plus-circle' %>" class="align-text-bottom me-1"></span>
-                <%= editing ? 'Update Category' : 'Add Category' %>
-            </button>
-            <a href="/admin/categories" class="btn btn-secondary">Cancel</a>
-        </form>
-    </div>
-</div>
-
-</main>
-<%- include('../../partials/footer'); %>
+    <button type="submit" class="btn btn-primary"><%= (typeof categoryData !== 'undefined' && categoryData.id) ? 'Cập nhật' : 'Thêm mới' %></button>
+    <a href="/admin/categories" class="btn btn-secondary">Hủy</a>
+</form>
