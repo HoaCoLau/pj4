@@ -33,7 +33,7 @@
                          <td><%= product.Category ? product.Category.name : 'Không có danh mục' %></td>
                          <td><%= product.stock_quantity %></td>
                          <td>
-                             <a href="/admin/products/edit/<%= product.id %>">Sửa</a>
+                             <a href="/admin/products/edit/<%= product.id %>" class="btn btn-warning" >Sửa</a>
                              <form action="/admin/products/delete/<%= product.id %>" method="POST" style="display:inline;">
                                  <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">Xóa</button>
                              </form>

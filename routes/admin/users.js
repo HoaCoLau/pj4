@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../../controllers/admin/userController');
-const { authenticate, authorizeAdmin } = require('../../middleware/authMiddleware');
+const { authenticate, authorizeAdmin , attachUserToLocals } = require('../../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs'); // Import fs
@@ -28,7 +28,7 @@ const upload = multer({ storage: storage });
 // Áp dụng middleware xác thực và phân quyền admin cho tất cả route trong file này
 router.use(authenticate);
 router.use(authorizeAdmin);
-
+router.use(attachUserToLocals);
 // Routes cho User (Admin chỉ quản lý danh sách và sửa/xóa, không thêm mới qua admin panel)
 router.get('/', userController.index); // Danh sách người dùng
 router.get('/edit/:id', userController.edit); // Form sửa thông tin user (tên, role, ảnh?)

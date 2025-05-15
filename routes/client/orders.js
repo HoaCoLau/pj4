@@ -2,10 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const orderController = require('../../controllers/client/orderController');
-const { authenticate } = require('../../middleware/authMiddleware'); // Cần đăng nhập để xem đơn hàng
+const { authenticate , attachUserToLocals } = require('../../middleware/authMiddleware'); // Cần đăng nhập để xem giỏ hàng
 
 // Áp dụng middleware xác thực cho tất cả route trong file này
 router.use(authenticate);
+router.use(attachUserToLocals);
+
 
 // Routes cho Đơn hàng của người dùng
 router.get('/', orderController.index); // Lịch sử đơn hàng

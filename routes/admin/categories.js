@@ -2,11 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../../controllers/admin/categoryController');
-const { authenticate, authorizeAdmin } = require('../../middleware/authMiddleware');
+const { authenticate, authorizeAdmin , attachUserToLocals } = require('../../middleware/authMiddleware');
 
 // Áp dụng middleware xác thực và phân quyền admin cho tất cả route trong file này
 router.use(authenticate);
 router.use(authorizeAdmin);
+router.use(attachUserToLocals);
 
 // Routes CRUD cho Category
 router.get('/', categoryController.index); // Danh sách

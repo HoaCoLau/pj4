@@ -45,7 +45,7 @@ exports.index = async (req, res) => {
     } catch (err) {
         console.error('Lỗi lấy thông tin giỏ hàng:', err);
         // logger.error(`Client Cart Index Error: ${err.message}`);
-        res.status(500).send('Lỗi máy chủ khi lấy thông tin giỏ hàng.');
+        res.redirect('/' + '?error=' + encodeURIComponent('Có lỗi xảy ra khi lấy thông tin giỏ hàng.'));
     }
 };
 

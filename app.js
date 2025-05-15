@@ -4,7 +4,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('pino-http')(); // Sử dụng pino-http cho Express
 const db = require('./models'); // Import models/index.js
-const { authenticate, authorizeAdmin, attachUserToLocals } = require('./middleware/authMiddleware'); // Import middleware xác thực và phân quyền
+// Import authenticate, authorizeAdmin, attachUserToLocals
+const { authenticate, authorizeAdmin, attachUserToLocals } = require('./middleware/authMiddleware');
 const dotenv = require('dotenv');
 const fs = require('fs'); // Import fs để tạo thư mục upload
 const expressEjsLayouts = require('express-ejs-layouts'); // Import thư viện
@@ -13,7 +14,14 @@ dotenv.config(); // Load biến môi trường
 
 const app = express();
 
-
+// Đồng bộ model với database (chỉ chạy khi khởi tạo hoặc có thay đổi schema)
+// db.sequelize.sync()
+//   .then(() => {
+//     console.log('Kết nối database thành công và đồng bộ models.');
+//   })
+//   .catch(err => {
+//     console.error('Lỗi kết nối database:', err);
+//   });
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -21,25 +29,21 @@ app.set('view engine', 'ejs');
 
 // Middleware
 app.use(expressEjsLayouts); // Sử dụng middleware layout NGAY SAU cấu hình view engine
-app.set('layout', 'layouts/main'); 
-app.use(logger); // Pino logger (sử dụng pino-http)
+app.set('layout', 'layouts/main');
+app.use(logger); // Pino logger
 app.use(express.json()); // Parse JSON request body
 app.use(express.urlencoded({ extended: false })); // Parse URL-encoded request body
 app.use(cookieParser()); // Parse cookies
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
 
-// Middleware để gắn thông tin user vào res.locals cho views, áp dụng cho mọi request
-app.use(attachUserToLocals);
-
 
 // Import routes
 const authRouter = require('./routes/auth');
 // Client routes
-const clientIndexRoutes = require('./routes/client/index'); // Trang chủ
-const clientProductRoutes = require('./routes/client/products'); // Danh sách/Chi tiết sản phẩm
-const clientCartRoutes = require('./routes/client/cart'); // Giỏ hàng
-const clientOrderRoutes = require('./routes/client/orders'); // Đơn hàng của user, Checkout
-
+const clientIndexRoutes = require('./routes/client/index');
+const clientProductRoutes = require('./routes/client/products');
+const clientCartRoutes = require('./routes/client/cart');
+const clientOrderRoutes = require('./routes/client/orders');
 // Admin routes
 const adminProductRoutes = require('./routes/admin/products');
 const adminCategoryRoutes = require('./routes/admin/categories');
@@ -49,30 +53,31 @@ const adminOrderRoutes = require('./routes/admin/orders');
 
 // Sử dụng routes
 
-// Routes xác thực (không cần authenticate)
+// Routes xác thực (không cần authenticate ở đây)
 app.use('/auth', authRouter);
 
 // Routes dành cho người dùng (client)
-app.use('/', clientIndexRoutes); // Trang chủ và các route công khai khác
-app.use('/products', clientProductRoutes); // Trang sản phẩm (công khai)
-// Các route client cần đăng nhập sẽ áp dụng middleware `authenticate` trong file route tương ứng
-app.use('/cart', clientCartRoutes); // Middleware `authenticate` được áp dụng trong routes/client/cart.js
-app.use('/orders', clientOrderRoutes); // Middleware `authenticate` được áp dụng trong routes/client/orders.js
+// Áp dụng attachUserToLocals cho các route công khai để có thể hiển thị tên user nếu đăng nhập
+app.use('/', attachUserToLocals, clientIndexRoutes);
+app.use('/products', attachUserToLocals, clientProductRoutes);
+
+// Các route client cần đăng nhập - Áp dụng authenticate và attachUserToLocals
+app.use('/cart', authenticate, attachUserToLocals, clientCartRoutes);
+app.use('/orders', authenticate, attachUserToLocals, clientOrderRoutes);
 
 
-// Routes dành cho Admin
-// Các route admin sẽ áp dụng cả authenticate và authorizeAdmin middleware trong từng file route
-app.use('/admin/products', adminProductRoutes);
-app.use('/admin/categories', adminCategoryRoutes);
-app.use('/admin/users', adminUserRoutes);
-app.use('/admin/orders', adminOrderRoutes);
-// Thêm route cho trang dashboard admin nếu có
-app.get('/admin', authenticate, authorizeAdmin, (req, res) => { // Có thể dùng '/admin' làm dashboard
-    res.redirect('/admin/dashboard'); // Chuyển hướng tới dashboard
+// Routes dành cho Admin - Áp dụng authenticate, authorizeAdmin, và attachUserToLocals
+app.use('/admin/products', authenticate, authorizeAdmin, attachUserToLocals, adminProductRoutes);
+app.use('/admin/categories', authenticate, authorizeAdmin, attachUserToLocals, adminCategoryRoutes);
+app.use('/admin/users', authenticate, authorizeAdmin, attachUserToLocals, adminUserRoutes);
+app.use('/admin/orders', authenticate, authorizeAdmin, attachUserToLocals, adminOrderRoutes);
+
+// Route cho trang dashboard admin
+app.get('/admin', authenticate, authorizeAdmin, attachUserToLocals, (req, res) => {
+    res.redirect('/admin/dashboard');
 });
-app.get('/admin/dashboard', authenticate, authorizeAdmin, (req, res) => {
-    // Render trang dashboard admin
-    res.render('admin/dashboard', { title: 'Dashboard Admin' }); // Cần tạo file views/admin/dashboard.ejs
+app.get('/admin/dashboard', authenticate, authorizeAdmin, attachUserToLocals, (req, res) => {
+    res.render('admin/dashboard', { title: 'Dashboard Admin' });
 });
 
 
