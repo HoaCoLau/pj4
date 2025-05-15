@@ -1,5 +1,4 @@
-{# views/client/products/detail.ejs #}
-<div class="container product-detail"> {# Dùng class riêng cho trang chi tiết #}
+<div class="container product-detail">
     <h2><%= product.name %></h2>
 
     <div class="detail-content">
@@ -13,13 +12,11 @@
             <p><strong>Mô tả:</strong></p>
             <p><%= product.description %></p>
 
-             {# Form Thêm vào giỏ hàng #}
              <% if (locals.user && product.stock_quantity > 0) { %>
                  <form action="/cart/add" method="POST">
                       <input type="hidden" name="productId" value="<%= product.id %>">
                       <div>
                            <label for="quantity">Số lượng:</label>
-                           {# Kiểm tra số lượng tồn kho để giới hạn input #}
                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="<%= product.stock_quantity %>">
                       </div>
                       <button type="submit">Thêm vào giỏ hàng</button>

@@ -1,7 +1,5 @@
-{# views/auth/register.ejs #}
 <div class="container">
     <h2><%= title %></h2>
-     {# Error messages được hiển thị ở layout #}
 
     <form action="/auth/register" method="POST">
         <div>
@@ -16,7 +14,6 @@
             <label for="password">Mật khẩu:</label>
             <input type="password" id="password" name="password" required>
         </div>
-        {# Có thể thêm confirm password nếu muốn #}
         <button type="submit">Đăng ký</button>
     </form>
     <p>Đã có tài khoản? <a href="/auth/login">Đăng nhập</a>.</p>

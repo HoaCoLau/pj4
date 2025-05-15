@@ -1,5 +1,5 @@
-{# views/partials/admin_header.ejs #}
-<header class="admin-header"> {# Class riêng cho header admin #}
+
+<header> 
     <div class="container">
         <div class="logo">
             <a href="/admin">Admin Dashboard</a>
@@ -10,13 +10,13 @@
                 <li><a href="/admin/categories">Danh mục</a></li>
                 <li><a href="/admin/users">Người dùng</a></li>
                 <li><a href="/admin/orders">Đơn hàng</a></li>
-                 <% if (locals.user) { %> {# locals.user có sẵn nhờ middleware #}
+                 <% if (locals.user) { %> 
                       <li class="user-info">
                            Chào Admin, <%= locals.user.name %>
                       </li>
                       <li><a href="/auth/logout">Đăng xuất</a></li>
                  <% } %>
-                <li><a href="/">Xem Website</a></li> {# Link về trang người dùng #}
+                <li><a href="/">Xem Website</a></li> 
             </ul>
         </nav>
     </div>

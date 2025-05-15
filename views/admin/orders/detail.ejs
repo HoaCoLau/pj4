@@ -1,7 +1,5 @@
-{# views/admin/orders/detail.ejs #}
 <div class="container admin-order-detail">
     <h2>Chi tiết Đơn hàng #<%= order.id %></h2>
-    {# Thông báo success/error được hiển thị ở layout #}
 
     <div class="order-info">
         <p><strong>Người đặt:</strong> <%= order.User ? order.User.name : 'Người dùng đã xóa' %> (Email: <%= order.User ? order.User.email : 'N/A' %>)</p>
@@ -16,7 +14,6 @@
     </div>
 
     <h3>Cập nhật Trạng thái Đơn hàng:</h3>
-     {# Error messages được hiển thị ở layout #}
     <form action="/admin/orders/update-status/<%= order.id %>" method="POST">
          <div>
               <label for="status">Chọn trạng thái:</label>

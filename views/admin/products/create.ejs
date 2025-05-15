@@ -1,7 +1,5 @@
-{# views/admin/products/create.ejs #}
 <div class="container admin-form">
     <h2><%= title %></h2>
-     {# Error messages được hiển thị ở layout #}
 
     <form action="/admin/products/create" method="POST" enctype="multipart/form-data"> {# Thêm enctype cho upload file #}
         <div>
@@ -29,7 +27,7 @@
         </div>
          <div>
              <label for="image">Ảnh sản phẩm:</label>
-             <input type="file" id="image" name="image" accept="image/*"> {# Chấp nhận file ảnh #}
+             <input type="file" id="image" name="image" accept="image/*"> 
          </div>
         <div>
             <label for="stock_quantity">Số lượng tồn kho:</label>

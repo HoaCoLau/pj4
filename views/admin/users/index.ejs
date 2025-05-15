@@ -1,8 +1,6 @@
-{# views/admin/users/index.ejs #}
 <div class="container admin-list">
     <h2><%= title %></h2>
 
-     {# Thông báo success/error được hiển thị ở layout #}
 
     <table>
         <thead>
@@ -32,7 +30,6 @@
                          <td><%= user.role %></td>
                          <td>
                              <a href="/admin/users/edit/<%= user.id %>">Sửa</a>
-                             {# Cẩn thận khi xóa người dùng, đặc biệt là Admin đang đăng nhập #}
                              <form action="/admin/users/delete/<%= user.id %>" method="POST" style="display:inline;">
                                  <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">Xóa</button>
                              </form>
