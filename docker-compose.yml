@@ -1,47 +1,41 @@
-version: '3.8' # Phiên bản Docker Compose
-
 services:
+  # Service cho cơ sở dữ liệu MySQL
+  db:
+    image: mysql:8.0
+    container_name: furniture_db
+    restart: always
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
   # Service cho ứng dụng Node.js
   app:
     build:
-      context: . # Ngữ cảnh build là thư mục hiện tại (nơi có Dockerfile)
-      dockerfile: Dockerfile # Tên file Dockerfile
-    container_name: furniture_app # Tên container
+      context: .
+      dockerfile: Dockerfile
+    container_name: furniture_app
+    restart: always
     ports:
-      - "3000:3000" # Map port 3000 từ máy chủ (host) đến port 3000 trong container
+      - "3000:3000"
     volumes:
-      - .:/app # Mount mã nguồn từ máy chủ vào container (hữu ích cho development - thay đổi code không cần rebuild image)
-      - /app/node_modules # Ngoại trừ thư mục node_modules để tránh ghi đè bởi mount volume trên
-    environment: # Truyền các biến môi trường vào container
-      NODE_ENV: development # Hoặc production
-      # Các biến môi trường kết nối database sẽ được cấu hình để trỏ đến service 'db'
-      DB_HOST: db # Tên service database trong Docker Compose network
-      DB_USER: ${DB_USER} # Lấy từ biến môi trường của máy chủ (hoặc .env)
-      DB_PASSWORD: ${DB_PASSWORD} # Lấy từ biến môi trường của máy chủ (hoặc .env)
-      DB_NAME: ${DB_NAME} # Lấy từ biến môi trường của máy chủ (hoặc .env)
-      DB_DIALECT: mysql # Cần thiết cho Sequelize
-      JWT_SECRET: ${JWT_SECRET} # Lấy từ biến môi trường của máy chủ (hoặc .env)
-      # Thêm các biến môi trường khác từ .env nếu cần
-    depends_on: # Đảm bảo service 'db' khởi động trước service 'app'
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: ${DB_NAME}
+      DB_DIALECT: mysql
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
       - db
-
-  # Service cho cơ sở dữ liệu MySQL
-  db:
-    image: mysql:8.0 # Sử dụng image MySQL phiên bản 8.0
-    container_name: furniture_db # Tên container
-    environment: # Cấu hình biến môi trường cho MySQL
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} # Mật khẩu root (sẽ là rỗng nếu DB_PASSWORD trong .env rỗng)
-      MYSQL_DATABASE: ${DB_NAME} # Tên database sẽ được tạo tự động
-      MYSQL_USER: ${DB_USER} # Tên user
-      MYSQL_PASSWORD: ${DB_PASSWORD} # Mật khẩu user (sẽ là rỗng)
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes' # <-- THÊM DÒNG NÀY để cho phép mật khẩu root rỗng khi khởi tạo
-      # Có thể thêm các biến khác
-    ports:
-      - "3306:3306" # Tùy chọn: Map port database ra máy chủ
-    volumes:
-      - db_data:/var/lib/mysql # Lưu trữ dữ liệu database vào một Docker volume
+    command: ["sh", "-c", "wait-for-db.sh db && npm start"]
 
 # Định nghĩa Docker volumes
 volumes:
-  db_data: # Volume để lưu trữ dữ liệu MySQL
-
+  db_data:
