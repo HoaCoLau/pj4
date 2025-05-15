@@ -1,5 +1,7 @@
+
 <div class="container admin-list">
     <h2><%= title %></h2>
+
 
     <table>
         <thead>
@@ -9,7 +11,7 @@
                 <th>Ngày đặt</th>
                 <th>Tổng tiền</th>
                 <th>Trạng thái</th>
-                <th>Hành động</th>
+                <th>Hành động</th> 
             </tr>
         </thead>
         <tbody>
@@ -22,16 +24,15 @@
                          <td><%= order.total_amount.toLocaleString('vi-VN') %> VNĐ</td>
                          <td><%= order.status %></td>
                          <td>
+
                              <a href="/admin/orders/detail/<%= order.id %>">Xem chi tiết</a>
-                             <form action="/admin/orders/delete/<%= order.id %>" method="POST" style="display:inline;">
-                                 <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa đơn hàng này?');">Xóa</button>
-                             </form>
+
                          </td>
                      </tr>
                  <% }); %>
              <% } else { %>
                  <tr>
-                     <td colspan="6">Chưa có đơn hàng nào.</td>
+                     <td colspan="6">Chưa có đơn hàng nào.</td> 
                  </tr>
              <% } %>
         </tbody>

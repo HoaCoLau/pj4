@@ -44,6 +44,7 @@ const clientIndexRoutes = require('./routes/client/index');
 const clientProductRoutes = require('./routes/client/products');
 const clientCartRoutes = require('./routes/client/cart');
 const clientOrderRoutes = require('./routes/client/orders');
+console.log('clientOrderRoutes loaded:', clientOrderRoutes);
 // Admin routes
 const adminProductRoutes = require('./routes/admin/products');
 const adminCategoryRoutes = require('./routes/admin/categories');

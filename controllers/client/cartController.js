@@ -31,7 +31,7 @@ exports.index = async (req, res) => {
         // Tính tổng tiền giỏ hàng (Tùy chọn, có thể tính ở view)
         let total = 0;
         if (cart && cart.CartDetails) {
-            total = cart.CartDetails.reduce((sum, item) => sum + (item.quantity * item.price_at_addition), 0);
+            total = cart.CartDetails.reduce((sum, item) => sum + (item.quantity * parseFloat(item.price_at_addition)), 0); // Chuyển đổi Decimal sang Number
         }
 
 
@@ -45,7 +45,7 @@ exports.index = async (req, res) => {
     } catch (err) {
         console.error('Lỗi lấy thông tin giỏ hàng:', err);
         // logger.error(`Client Cart Index Error: ${err.message}`);
-        res.redirect('/' + '?error=' + encodeURIComponent('Có lỗi xảy ra khi lấy thông tin giỏ hàng.'));
+        res.status(500).send('Lỗi máy chủ khi lấy thông tin giỏ hàng.');
     }
 };
 
@@ -114,15 +114,20 @@ exports.addToCart = async (req, res) => {
     }
 };
 
-// Cập nhật số lượng sản phẩm trong giỏ hàng (Client)
+// Cập nhật số lượng sản phẩm trong giỏ hàng (Client) - Sửa để trả về JSON cho AJAX
 exports.updateCartItem = async (req, res) => {
     const cartDetailId = req.params.id; // ID của CartDetail
+    // Joi validate req.body (đã được parse bởi express.json())
     const { error, value } = updateCartSchema.validate(req.body);
     const userId = req.user.id;
 
 
     if (error) {
-         return res.redirect('/cart?error=' + encodeURIComponent(error.details[0].message));
+         // Trả về JSON lỗi cho AJAX
+         return res.status(400).json({
+             error: 'Validation Error',
+             message: error.details[0].message
+         });
     }
 
     try {
@@ -136,7 +141,11 @@ exports.updateCartItem = async (req, res) => {
 
         if (!cartDetail) {
              // logger.warn(`Client Update Cart Item: CartDetail ${cartDetailId} not found or doesn't belong to user ${userId}.`);
-            return res.redirect('/cart?error=' + encodeURIComponent('Mục giỏ hàng không tồn tại.'));
+             // Trả về JSON lỗi cho AJAX
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Mục giỏ hàng không tồn tại.'
+            });
         }
 
         const { quantity } = value;
@@ -144,7 +153,10 @@ exports.updateCartItem = async (req, res) => {
         // Kiểm tra tồn kho khi cập nhật số lượng (tùy chọn)
         // const product = await Product.findByPk(cartDetail.product_id);
         // if (product && product.stock_quantity < quantity) {
-        //      return res.redirect('/cart?error=' + encodeURIComponent('Số lượng trong kho không đủ cho sản phẩm ' + (product.name || 'này') + '.'));
+        //      return res.status(400).json({
+        //          error: 'Stock Error',
+        //          message: `Số lượng trong kho không đủ cho sản phẩm ${(product.name || 'này')}. Chỉ còn ${product.stock_quantity} sản phẩm.`
+        //      });
         // }
 
 
@@ -152,12 +164,20 @@ exports.updateCartItem = async (req, res) => {
 
         // logger.info(`Updated quantity for cart item ${cartDetailId} to ${quantity}`);
 
-        res.redirect('/cart?success=' + encodeURIComponent('Cập nhật số lượng thành công.'));
+        // Trả về JSON thành công cho AJAX
+        res.status(200).json({
+            success: true,
+            message: 'Cập nhật số lượng thành công.'
+        });
 
     } catch (err) {
         console.error('Lỗi khi cập nhật giỏ hàng:', err);
         // logger.error(`Client Update Cart Item Error: ${err.message}`);
-        res.redirect('/cart?error=' + encodeURIComponent('Có lỗi xảy ra khi cập nhật giỏ hàng.'));
+         // Trả về JSON lỗi cho AJAX
+        res.status(500).json({
+            error: 'Server Error',
+            message: 'Có lỗi xảy ra khi cập nhật giỏ hàng. Vui lòng thử lại.'
+        });
     }
 };
 

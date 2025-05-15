@@ -2,12 +2,12 @@
     <h2><%= title %></h2>
 
     <% if (cart && cart.CartDetails && cart.CartDetails.length > 0) { %>
-        <table>
+        <table id="cart-table">
             <thead>
                 <tr>
                     <th>Sản phẩm</th>
                     <th>Ảnh</th>
-                    <th>Giá</th> {# Giá tại thời điểm thêm vào giỏ #}
+                    <th>Giá</th> 
                     <th>Số lượng</th>
                     <th>Tổng tiền</th>
                     <th>Hành động</th>
@@ -15,7 +15,7 @@
             </thead>
             <tbody>
                 <% cart.CartDetails.forEach(item => { %>
-                    <tr>
+                    <tr class="cart-item-row" data-price="<%= item.price_at_addition %>" data-cart-detail-id="<%= item.id %>">
                         <td><%= item.Product ? item.Product.name : 'Sản phẩm đã xóa' %></td>
                          <td>
                              <% if (item.Product && item.Product.image_url) { %>
@@ -24,15 +24,13 @@
                                   Không có ảnh
                              <% } %>
                          </td>
-                        <td><%= item.price_at_addition.toLocaleString('vi-VN') %> VNĐ</td>
+                        <td class="item-price"><%= parseFloat(item.price_at_addition).toLocaleString('vi-VN') %> VNĐ</td>
                         <td>
-                            <form action="/cart/update/<%= item.id %>" method="POST" style="display:inline-block;">
-                                 {# Cần kiểm tra lại số lượng tồn kho thực tế nếu muốn giới hạn input number #}
-                                <input type="number" name="quantity" value="<%= item.quantity %>" min="1" style="width: 60px;">
-                                <button type="submit">Cập nhật</button>
-                            </form>
+
+                                <input type="number" name="quantity" value="<%= item.quantity %>" min="1" style="width: 60px;" class="item-quantity">
+
                         </td>
-                        <td><%= (item.quantity * item.price_at_addition).toLocaleString('vi-VN') %> VNĐ</td>
+                        <td class="item-subtotal"><%= (item.quantity * parseFloat(item.price_at_addition)).toLocaleString('vi-VN') %> VNĐ</td>
                         <td>
                             <form action="/cart/remove/<%= item.id %>" method="POST" style="display:inline;">
                                 <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?');">Xóa</button>
@@ -44,7 +42,7 @@
         </table>
 
         <div class="cart-summary">
-            <h3>Tổng tiền giỏ hàng: <%= total.toLocaleString('vi-VN') %> VNĐ</h3>
+            <h3>Tổng tiền giỏ hàng: <span id="cart-total"><%= total.toLocaleString('vi-VN') %></span> VNĐ</h3>
              <a href="/orders/checkout" class="button">Tiến hành thanh toán</a>
         </div>
 
@@ -52,4 +50,116 @@
         <p>Giỏ hàng của bạn hiện đang trống.</p>
          <a href="/products" class="button">Tiếp tục mua sắm</a>
     <% } %>
+
+    {# Thêm thẻ script cho JavaScript #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cartTable = document.getElementById('cart-table');
+            const cartTotalSpan = document.getElementById('cart-total');
+
+            if (cartTable) {
+                // Lắng nghe sự kiện 'change' trên các input số lượng
+                cartTable.addEventListener('change', function(event) {
+                    if (event.target.classList.contains('item-quantity')) {
+                        const quantityInput = event.target;
+                        const newQuantity = parseInt(quantityInput.value, 10);
+                        const row = quantityInput.closest('.cart-item-row');
+
+                        if (row) {
+                            const cartDetailId = row.dataset.cartDetailId; // Lấy ID chi tiết giỏ hàng
+                            const price = parseFloat(row.dataset.price); // Lấy giá từ data attribute
+
+                            if (!isNaN(newQuantity) && newQuantity >= 1 && !isNaN(price)) {
+                                // Cập nhật hiển thị tổng tiền item ngay lập tức
+                                const subtotalCell = row.querySelector('.item-subtotal');
+                                const subtotal = newQuantity * price;
+                                subtotalCell.textContent = subtotal.toLocaleString('vi-VN') + ' VNĐ';
+
+                                // Cập nhật hiển thị tổng tiền toàn giỏ hàng
+                                updateCartTotal();
+
+                                // Gửi yêu cầu AJAX lên server để cập nhật số lượng trong database
+                                updateCartItemOnServer(cartDetailId, newQuantity);
+
+                            } else {
+                                // Xử lý trường hợp input không hợp lệ
+                                quantityInput.value = quantityInput.min || 1; // Đặt lại giá trị min
+                                // Có thể hiển thị thông báo lỗi cho người dùng
+                                alert('Số lượng không hợp lệ. Vui lòng nhập số nguyên dương.');
+                                // Cập nhật lại hiển thị và tổng tiền sau khi đặt lại giá trị
+                                const validQuantity = parseInt(quantityInput.value, 10);
+                                const subtotalCell = row.querySelector('.item-subtotal');
+                                const subtotal = validQuantity * price;
+                                subtotalCell.textContent = subtotal.toLocaleString('vi-VN') + ' VNĐ';
+                                updateCartTotal();
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Hàm gửi yêu cầu AJAX cập nhật số lượng lên server
+            async function updateCartItemOnServer(cartDetailId, quantity) {
+                try {
+                    const response = await fetch(`/cart/update/${cartDetailId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json', // Gửi dữ liệu dưới dạng JSON
+                            // Có thể cần thêm CSRF token nếu bạn sử dụng
+                        },
+                        body: JSON.stringify({ quantity: quantity }) // Gửi số lượng mới trong body
+                    });
+
+                    // Kiểm tra status code của response
+                    if (response.ok) { // response.ok là true cho status 200-299
+                        // Xử lý khi server trả về thành công
+                        const result = await response.json(); // Đọc JSON response
+                        console.log('Cập nhật giỏ hàng thành công:', result);
+                        // Có thể hiển thị thông báo thành công nhỏ trên giao diện nếu cần
+                         // alert('Cập nhật giỏ hàng thành công!'); // Tùy chọn
+
+                    } else {
+                        // Xử lý khi server trả về lỗi (status 4xx, 5xx)
+                        const errorData = await response.json(); // Đọc JSON lỗi response
+                        console.error('Lỗi khi cập nhật giỏ hàng:', errorData);
+                        // Hiển thị lỗi từ server cho người dùng
+                        alert('Lỗi khi cập nhật giỏ hàng: ' + (errorData.message || 'Vui lòng thử lại.'));
+
+                        // Tải lại trang để đồng bộ lại dữ liệu từ server sau khi cập nhật thất bại
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    // Xử lý lỗi mạng hoặc lỗi trong quá trình fetch
+                    console.error('Lỗi mạng hoặc lỗi xử lý Fetch:', error);
+                    alert('Có lỗi xảy ra. Vui lòng kiểm tra kết nối mạng và thử lại.');
+                     // Tải lại trang để đồng bộ lại dữ liệu
+                     window.location.reload();
+                }
+            }
+
+
+            function updateCartTotal() {
+                let grandTotal = 0;
+                // Lấy lại tất cả các cell tổng tiền item sau khi có thể đã cập nhật hiển thị
+                const itemSubtotals = cartTable.querySelectorAll('.item-subtotal');
+
+                itemSubtotals.forEach(subtotalCell => {
+                    // Lấy giá trị tổng tiền item (loại bỏ VNĐ và dấu phân cách hàng nghìn)
+                    // Sử dụng regex để loại bỏ dấu phân cách hàng nghìn (dấu chấm) và dấu phân cách thập phân (dấu phẩy) trước khi parse
+                    const subtotalText = subtotalCell.textContent.replace(' VNĐ', '').replace(/\./g, ''); // Loại bỏ dấu chấm phân cách hàng nghìn
+                    const subtotal = parseFloat(subtotalText.replace(',', '.')); // Thay dấu phẩy thập phân bằng dấu chấm và parse
+
+                    if (!isNaN(subtotal)) {
+                        grandTotal += subtotal;
+                    }
+                });
+
+                // Cập nhật hiển thị tổng tiền toàn giỏ hàng
+                cartTotalSpan.textContent = grandTotal.toLocaleString('vi-VN');
+            }
+
+             // Chạy updateCartTotal lần đầu khi trang load để đảm bảo tính toán đúng
+             updateCartTotal();
+        });
+    </script>
 </div>

@@ -11,10 +11,10 @@ router.use(attachUserToLocals);
 
 // Routes cho Đơn hàng của người dùng
 router.get('/', orderController.index); // Lịch sử đơn hàng
-router.get('/:id', orderController.detail); // Chi tiết đơn hàng theo ID
 
 // Routes liên quan đến quá trình thanh toán/đặt hàng từ giỏ hàng
 router.get('/checkout', orderController.showCheckout); // Trang thanh toán (Hiển thị thông tin từ giỏ hàng)
-router.post('/checkout', orderController.createOrderFromCart); // Xử lý tạo đơn hàng từ giỏ hàng
+router.post('/checkout', orderController.createOrderFromCart);  // Xử lý tạo đơn hàng từ giỏ hàng
+router.get('/:id', orderController.detail); // Chi tiết đơn hàng theo ID
 
 module.exports = router;

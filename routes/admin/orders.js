@@ -12,7 +12,6 @@ router.use(attachUserToLocals);
 // Routes cho Order (Admin xem danh sách, chi tiết và cập nhật trạng thái, xóa)
 router.get('/', orderController.index); // Danh sách đơn hàng
 router.get('/detail/:id', orderController.detail); // Chi tiết đơn hàng
-router.post('/update-status/:id', orderController.updateStatus); // Cập nhật trạng thái đơn hàng
-router.post('/delete/:id', orderController.delete); // Xóa đơn hàng (Cẩn thận!)
+router.post('/update-status/:id', orderController.updateStatus); 
 
 module.exports = router;
