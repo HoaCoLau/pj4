@@ -4,7 +4,7 @@
     <div class="filters">
         <form action="/products" method="GET">
             <label for="category">Danh mục:</label>
-            <select name="category" id="category" onchange="this.form.submit()"> {# Submit form khi chọn danh mục #}
+            <select name="category" id="category" onchange="this.form.submit()"> 
                 <option value="">Tất cả danh mục</option>
                 <% categories.forEach(category => { %>
                     <option value="<%= category.id %>" <%= selectedCategoryId == category.id ? 'selected' : '' %>>
@@ -17,7 +17,7 @@
             <input type="text" id="search" name="search" value="<%= searchQuery || '' %>">
             <button type="submit">Tìm kiếm</button>
              <% if (selectedCategoryId || searchQuery) { %> 
-                 <a href="/products" class="button">Reset Filter</a>
+                 <a href="/products" class="button">Xóa chọn</a>
              <% } %>
         </form>
     </div>
@@ -34,7 +34,7 @@
                      <% if (locals.user && product.stock_quantity > 0) { %>
                          <form action="/cart/add" method="POST" style="display: inline-block;">
                               <input type="hidden" name="productId" value="<%= product.id %>">
-                              <input type="hidden" name="quantity" value="1"> {# Mặc định thêm 1 sản phẩm #}
+                              <input type="hidden" name="quantity" value="1">
                               <button type="submit">Thêm vào giỏ</button>
                          </form>
                      <% } else if (product.stock_quantity <= 0) { %>

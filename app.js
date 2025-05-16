@@ -35,7 +35,10 @@ app.use(express.json()); // Parse JSON request body
 app.use(express.urlencoded({ extended: false })); // Parse URL-encoded request body
 app.use(cookieParser()); // Parse cookies
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
-
+app.use((req, res, next) => {
+  res.locals.currentPath = req.path; 
+  next();
+});
 
 // Import routes
 const authRouter = require('./routes/auth');

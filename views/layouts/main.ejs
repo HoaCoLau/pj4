@@ -11,11 +11,21 @@
 </head>
 <body>
 
-    <% if (locals.user && locals.user.role === 'admin' && title.startsWith('Quản lý')) { %>
-        <%- include('../partials/admin_header', { user: locals.user }) %>
-    <% } else { %>
-        <%- include('../partials/client_header', { user: locals.user }) %>
-    <% } %>
+    <%
+  let isAdminSection = false;
+  if (locals.currentPath && locals.currentPath.startsWith('/admin')) {
+    isAdminSection = true;
+  }
+%>
+
+<% if (isAdminSection && locals.user && locals.user.role === 'admin') { %>
+    <%- include('../partials/admin_header', { user: locals.user }) %>
+<% } else if (isAdminSection && (!locals.user || locals.user.role !== 'admin')) { %>
+    <p>Bạn không có quyền truy cập khu vực này.</p> 
+    <%- include('../partials/client_header', { user: locals.user }) %> 
+<% } else { %>
+    <%- include('../partials/client_header', { user: locals.user }) %>
+<% } %>
 
 
     <main>

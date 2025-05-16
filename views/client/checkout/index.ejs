@@ -46,8 +46,6 @@
                   <select id="payment_method" name="payment_method" required>
                        <option value="">-- Chọn phương thức --</option>
                        <option value="cod" <%= typeof oldInput !== 'undefined' && oldInput.payment_method === 'cod' ? 'selected' : '' %>>Thanh toán khi nhận hàng (COD)</option>
-                       {# Thêm các phương thức khác nếu có #}
-                       {# <option value="transfer" <%= typeof oldInput !== 'undefined' && oldInput.payment_method === 'transfer' ? 'selected' : '' %>>Chuyển khoản ngân hàng</option> #}
                   </select>
              </div>
               <div>
@@ -56,6 +54,7 @@
              </div>
 
              <button type="submit">Hoàn tất đặt hàng</button>
+             <a href="/cart" class="btn btn-warning" >Quay lại</a>
         </form>
 
     <% } else { %>
