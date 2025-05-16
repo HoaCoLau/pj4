@@ -1,0 +1,50 @@
+
+services:
+  app:
+    build: .
+    container_name: pj4_nodejs_app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      # Sử dụng section 'docker' từ config/config.js
+      - NODE_ENV=docker
+      - PORT=3000
+      # THAY THẾ BẰNG JWT_SECRET CỦA BẠN.
+      - JWT_SECRET=your_super_secret_jwt_key_here
+
+      # Các biến môi trường này sẽ được config/config.js đọc
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD= # Mật khẩu rỗng cho root
+      - DB_NAME=pj4_db
+      # - DB_LOGGING=true # Bỏ comment để bật Sequelize logging
+    depends_on:
+      db:
+        condition: service_healthy # <--- THAY ĐỔI QUAN TRỌNG: Đợi db healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: pj4_mysql_service
+    command: [--default-authentication-plugin=mysql_native_password]
+    restart: always
+    environment:
+      MYSQL_DATABASE: pj4_db
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes' # Cho phép user 'root' có mật khẩu rỗng
+      # MYSQL_ROOT_PASSWORD: your_root_password # Nếu bạn đặt mật khẩu cho root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data_pj4:/var/lib/mysql
+    healthcheck: # <--- THÊM HEALTHCHECK CHO MYSQL
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot"] # Ping với user root (không mật khẩu)
+      interval: 10s    # Kiểm tra mỗi 10 giây
+      timeout: 5s      # Chờ tối đa 5 giây cho mỗi lần kiểm tra
+      retries: 5       # Thử lại 5 lần nếu thất bại
+      start_period: 30s # Cho MySQL 30 giây để khởi tạo trước khi bắt đầu healthcheck
+
+volumes:
+  mysql_data_pj4:

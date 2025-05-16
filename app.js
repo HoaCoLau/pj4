@@ -15,13 +15,13 @@ dotenv.config(); // Load biến môi trường
 const app = express();
 
 // Đồng bộ model với database (chỉ chạy khi khởi tạo hoặc có thay đổi schema)
-// db.sequelize.sync()
-//   .then(() => {
-//     console.log('Kết nối database thành công và đồng bộ models.');
-//   })
-//   .catch(err => {
-//     console.error('Lỗi kết nối database:', err);
-//   });
+db.sequelize.sync()
+  .then(() => {
+    console.log('Kết nối database thành công và đồng bộ models.');
+  })
+  .catch(err => {
+    console.error('Lỗi kết nối database:', err);
+  });
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
